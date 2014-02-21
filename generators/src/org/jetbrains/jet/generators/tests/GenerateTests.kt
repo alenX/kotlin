@@ -412,6 +412,7 @@ fun main(args: Array<String>) {
             model("intentions/convertIfToAssert", testMethod = "doTestConvertIfWithThrowToAssertIntention")
             model("intentions/makeTypeExplicitInLambda", testMethod = "doTestMakeTypeExplicitInLambda")
             model("intentions/makeTypeImplicitInLambda", testMethod = "doTestMakeTypeImplicitInLambda")
+            model("intentions/operatorToFunction", testMethod = "doTestOperatorToFunction")
             model("intentions/convertToForEachLoop", testMethod = "doTestConvertToForEachLoop")
             model("intentions/convertToForEachFunctionCall", testMethod = "doTestConvertToForEachFunctionCall")
         }
