@@ -302,3 +302,13 @@ public fun JetSimpleNameExpression.getReceiverExpression(): JetExpression? {
     }
     return null
 }
+
+public fun JetSimpleNameExpression.isImportDirectiveExpression(): Boolean {
+    val parent = getParent()
+    if (parent == null) {
+        return false
+    }
+    else {
+        return parent is JetImportDirective || parent.getParent() is JetImportDirective
+    }
+}
