@@ -45,32 +45,26 @@ public class JetImportDirectiveElementType extends JetStubElementType<PsiJetImpo
     }
 
     @Override
-    public PsiJetImportDirectiveStub createStub(
-            @NotNull JetImportDirective psi, StubElement parentStub
-    ) {
-        return new PsiJetImportDirectiveStubImpl(parentStub);
+    public PsiJetImportDirectiveStub createStub(@NotNull JetImportDirective psi, StubElement parentStub) {
+        return new PsiJetImportDirectiveStubImpl(parentStub, psi.isAbsoluteInRootPackage(), psi.isAllUnder());
     }
 
     @Override
-    public void serialize(
-            @NotNull PsiJetImportDirectiveStub stub, @NotNull StubOutputStream dataStream
-    ) throws IOException {
-        //TODO:
+    public void serialize(@NotNull PsiJetImportDirectiveStub stub, @NotNull StubOutputStream dataStream) throws IOException {
+        dataStream.writeBoolean(stub.isAbsoluteInRootPackage());
+        dataStream.writeBoolean(stub.isAllUnder());
     }
 
     @NotNull
     @Override
-    public PsiJetImportDirectiveStub deserialize(
-            @NotNull StubInputStream dataStream, StubElement parentStub
-    ) throws IOException {
-        //TODO
-        return new PsiJetImportDirectiveStubImpl(parentStub);
+    public PsiJetImportDirectiveStub deserialize(@NotNull StubInputStream dataStream, StubElement parentStub) throws IOException {
+        boolean isAbsoluteInRootPackage = dataStream.readBoolean();
+        boolean isAllUnder = dataStream.readBoolean();
+        return new PsiJetImportDirectiveStubImpl(parentStub, isAbsoluteInRootPackage, isAllUnder);
     }
 
     @Override
-    public void indexStub(
-            @NotNull PsiJetImportDirectiveStub stub, @NotNull IndexSink sink
-    ) {
+    public void indexStub(@NotNull PsiJetImportDirectiveStub stub, @NotNull IndexSink sink) {
         // do nothing
     }
 }
