@@ -614,7 +614,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
     private List<PropertyDescriptor> getDataProperties() {
         ArrayList<PropertyDescriptor> result = Lists.newArrayList();
         for (JetParameter parameter : getPrimaryConstructorParameters()) {
-            if (parameter.getValOrVarNode() != null) {
+            if (parameter.hasValOrVarNode()) {
                 result.add(bindingContext.get(BindingContext.PRIMARY_CONSTRUCTOR_PARAMETER, parameter));
             }
         }
@@ -1262,7 +1262,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
         int curParam = 0;
         List<JetParameter> constructorParameters = getPrimaryConstructorParameters();
         for (JetParameter parameter : constructorParameters) {
-            if (parameter.getValOrVarNode() != null) {
+            if (parameter.hasValOrVarNode()) {
                 VariableDescriptor descriptor = paramDescrs.get(curParam);
                 Type type = typeMapper.mapType(descriptor);
                 iv.load(0, classAsmType);
