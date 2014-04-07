@@ -1724,8 +1724,7 @@ public class ImplementationBodyCodegen extends ClassBodyCodegen {
             @NotNull JetProperty property,
             @NotNull JetTypeMapper typeMapper
     ) {
-        JetExpression initializer = property.getDelegateExpressionOrInitializer();
-        if (initializer == null) return false;
+        if (!property.hasDelegateExpressionOrInitializer()) return false;
 
         PropertyDescriptor propertyDescriptor = (PropertyDescriptor) typeMapper.getBindingContext().get(BindingContext.VARIABLE, property);
         assert propertyDescriptor != null;
