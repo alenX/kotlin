@@ -105,6 +105,7 @@ import org.jetbrains.jet.plugin.codeInsight.AbstractJetInspectionTest
 import org.jetbrains.jet.plugin.debugger.AbstractKotlinSteppingTest
 import org.jetbrains.jet.completion.AbstractMultiFileJvmBasicCompletionTest
 import org.jetbrains.jet.plugin.refactoring.introduce.introduceVariable.AbstractJetExtractionTest
+import org.jetbrains.jet.plugin.stubs.AbstractLazyResolveByStubTest
 
 fun main(args: Array<String>) {
     System.setProperty("java.awt.headless", "true")
@@ -566,6 +567,13 @@ fun main(args: Array<String>) {
         testClass(javaClass<AbstractJetExtractionTest>()) {
             model("refactoring/introduceVariable", extension = "kt", testMethod = "doIntroduceVariableTest")
             model("refactoring/extractFunction", extension = "kt", testMethod = "doExtractFunctionTest")
+        }
+    }
+
+    testGroup("idea/tests", "compiler/testData") {
+        testClass(javaClass<AbstractLazyResolveByStubTest>()) {
+            model("loadJava/compiledKotlin", testMethod = "doTestCheckingPrimaryConstructorsAndAccessors")
+            model("loadJava/compiledJavaCompareWithKotlin", testMethod = "doTestNotCheckingPrimaryConstructors")
         }
     }
 
