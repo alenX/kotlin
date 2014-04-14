@@ -255,7 +255,7 @@ public class PackageGenTest extends CodegenTestCase {
         loadText("fun foo(s1: String, s2: String, s3: String) = s1 + s2 + s3");
         String text = generateToText();
         int firstStringBuilderCreation = text.indexOf("NEW java/lang/StringBuilder");
-        assertEquals(-1, text.indexOf("NEW java/lang/StringBuilder", firstStringBuilderCreation + 1));
+        assertEquals(text, -11, text.indexOf("NEW java/lang/StringBuilder", firstStringBuilderCreation + 1));
         Method main = generateFunction();
         assertEquals("kotlin Lang", main.invoke(null, "kotlin", " ", "Lang"));
     }

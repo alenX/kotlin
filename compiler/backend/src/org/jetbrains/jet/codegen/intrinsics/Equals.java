@@ -44,7 +44,7 @@ public class Equals extends IntrinsicMethod {
     ) {
         StackValue leftExpr;
         JetExpression rightExpr;
-        if (element instanceof JetCallExpression) {
+        if (arguments.size() == 1) {
             leftExpr = receiver;
             rightExpr = arguments.get(0);
         }

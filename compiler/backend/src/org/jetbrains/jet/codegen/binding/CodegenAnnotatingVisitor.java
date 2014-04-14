@@ -445,9 +445,11 @@ class CodegenAnnotatingVisitor extends JetVisitorVoid {
     public void visitBinaryExpression(@NotNull JetBinaryExpression expression) {
         super.visitBinaryExpression(expression);
 
-        FunctionDescriptor operationDescriptor =
-                (FunctionDescriptor) bindingContext.get(BindingContext.REFERENCE_TARGET, expression.getOperationReference());
-        if (operationDescriptor == null) return;
+        DeclarationDescriptor declarationDescriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression.getOperationReference());
+
+        if (!(declarationDescriptor instanceof FunctionDescriptor)) return;
+
+        FunctionDescriptor operationDescriptor = (FunctionDescriptor) declarationDescriptor;
 
         FunctionDescriptor original = SamCodegenUtil.getOriginalIfSamAdapter(operationDescriptor);
         if (original == null) return;

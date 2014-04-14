@@ -42,15 +42,13 @@ public class IdentityEquals extends IntrinsicMethod {
             List<JetExpression> arguments,
             StackValue receiver
     ) {
-        if (element instanceof JetCallExpression) {
+        if (arguments.size() == 1) {
             receiver.put(OBJECT_TYPE, v);
             codegen.gen(arguments.get(0)).put(OBJECT_TYPE, v);
         }
         else {
-            assert element instanceof JetBinaryExpression;
-            JetBinaryExpression e = (JetBinaryExpression) element;
-            codegen.gen(e.getLeft()).put(OBJECT_TYPE, v);
-            codegen.gen(e.getRight()).put(OBJECT_TYPE, v);
+            codegen.gen(arguments.get(0)).put(OBJECT_TYPE, v);
+            codegen.gen(arguments.get(1)).put(OBJECT_TYPE, v);
         }
         StackValue.cmp(JetTokens.EQEQEQ, OBJECT_TYPE).put(returnType, v);
         return returnType;

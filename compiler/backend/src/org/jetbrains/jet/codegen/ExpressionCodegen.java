@@ -27,6 +27,7 @@ import com.intellij.util.Function;
 import com.intellij.util.containers.Stack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.descriptors.impl.LocalVariableDescriptor;
 import org.jetbrains.org.objectweb.asm.Label;
 import org.jetbrains.org.objectweb.asm.MethodVisitor;
 import org.jetbrains.org.objectweb.asm.Type;
@@ -1622,6 +1623,15 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
         return bodyExpression instanceof JetReturnExpression;
     }
 
+    @NotNull
+    private static ResolvedCall<?> unwrapVariableAsFunction(@NotNull ResolvedCall<?> resolvedCall)  {
+        if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
+            VariableAsFunctionResolvedCall call = (VariableAsFunctionResolvedCall) resolvedCall;
+            resolvedCall = call.getVariableCall();
+        }
+        return resolvedCall;
+    }
+
     @Override
     public StackValue visitSimpleNameExpression(@NotNull JetSimpleNameExpression expression, StackValue receiver) {
         ResolvedCall<?> resolvedCall = bindingContext.get(BindingContext.RESOLVED_CALL, expression);
@@ -1631,10 +1641,7 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             descriptor = bindingContext.get(BindingContext.REFERENCE_TARGET, expression);
         }
         else {
-            if (resolvedCall instanceof VariableAsFunctionResolvedCall) {
-                VariableAsFunctionResolvedCall call = (VariableAsFunctionResolvedCall) resolvedCall;
-                resolvedCall = call.getVariableCall();
-            }
+            resolvedCall = unwrapVariableAsFunction(resolvedCall);
             receiver = StackValue.receiver(resolvedCall, receiver, this, null);
             descriptor = resolvedCall.getResultingDescriptor();
         }
@@ -2650,19 +2657,19 @@ public class ExpressionCodegen extends JetVisitor<StackValue, StackValue> implem
             ResolvedCall<?> resolvedCall = bindingContext.get(BindingContext.RESOLVED_CALL, reference);
             Call call = bindingContext.get(BindingContext.CALL, reference);
 
-            DeclarationDescriptor op = bindingContext.get(BindingContext.REFERENCE_TARGET, reference);
-            assert op instanceof FunctionDescriptor : String.valueOf(op);
-            Callable callable = resolveToCallable((FunctionDescriptor) op, false);
-            if (callable instanceof IntrinsicMethod) {
-                //noinspection ConstantConditions
-                Type returnType = typeMapper.mapType(resolvedCall.getResultingDescriptor());
-                ((IntrinsicMethod) callable).generate(this, v, returnType, expression,
-                                                      Arrays.asList(expression.getLeft(), expression.getRight()), receiver);
-                return StackValue.onStack(returnType);
-            }
-            else {
+            //DeclarationDescriptor op = bindingContext.get(BindingContext.REFERENCE_TARGET, reference);
+            //assert op instanceof FunctionDescriptor : String.valueOf(op);
+            //Callable callable = resolveToCallable((FunctionDescriptor) op, false);
+            //if (callable instanceof IntrinsicMethod) {
+            //    //noinspection ConstantConditions
+            //    Type returnType = typeMapper.mapType(resolvedCall.getResultingDescriptor());
+            //    ((IntrinsicMethod) callable).generate(this, v, returnType, expression,
+            //                                          Arrays.asList(expression.getLeft(), expression.getRight()), receiver);
+            //    return StackValue.onStack(returnType);
+            //}
+            //else {
                 return invokeFunction(call, receiver, resolvedCall);
-            }
+            //}
         }
     }
 
