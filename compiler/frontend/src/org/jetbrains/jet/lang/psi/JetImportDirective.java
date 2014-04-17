@@ -53,6 +53,7 @@ public class JetImportDirective extends JetElementImplStub<PsiJetImportDirective
 
     @Nullable @IfNotParsed
     public JetExpression getImportedReference() {
+        //TODO: array factory
         JetExpression[] references = getStubOrPsiChildren(IMPORT_DIRECTIVE_EXPRESSIONS, new JetExpression[] {});
         if (references.length > 0) {
             return references[0];
