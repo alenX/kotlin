@@ -25,10 +25,7 @@ import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.JetTypeMapper;
 import org.jetbrains.org.objectweb.asm.*;
 import org.jetbrains.org.objectweb.asm.commons.Method;
-import org.jetbrains.org.objectweb.asm.tree.AbstractInsnNode;
-import org.jetbrains.org.objectweb.asm.tree.FieldInsnNode;
-import org.jetbrains.org.objectweb.asm.tree.MethodNode;
-import org.jetbrains.org.objectweb.asm.tree.VarInsnNode;
+import org.jetbrains.org.objectweb.asm.tree.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -52,6 +49,7 @@ public class LambdaTransformer {
     private final ClassReader reader;
 
     private String superName;
+
     private final boolean isSameModule;
 
     private final Map<String, List<String>> fieldNames = new HashMap<String, List<String>>();
@@ -95,6 +93,7 @@ public class LambdaTransformer {
     public InlineResult doTransform(@NotNull ConstructorInvocation invocation, @NotNull FieldRemapper parentRemapper) {
         final ClassBuilder classBuilder = createClassBuilder();
         final List<MethodNode> methodsToTransform = new ArrayList<MethodNode>();
+        final List<FieldNode> fieldToAdd = new ArrayList<FieldNode>();
         reader.accept(new ClassVisitor(InlineCodegenUtil.API, classBuilder.getVisitor()) {
 
             @Override
@@ -131,14 +130,15 @@ public class LambdaTransformer {
             public FieldVisitor visitField(
                     int access, String name, String desc, String signature, Object value
             ) {
-                //field will be generated in another way
-                //skip only captured
-                return null;
+                addUniqueField(name);
+                FieldNode fieldNode = new FieldNode(access, name, desc, signature, value);
+                fieldToAdd.add(fieldNode);
+                return fieldNode;
             }
         }, ClassReader.SKIP_FRAMES);
 
         ParametersBuilder capturedBuilder = ParametersBuilder.newBuilder();
-        extractParametersMapping(constructor, capturedBuilder, invocation);
+        extractParametersMappingAndPatchConstructor(constructor, capturedBuilder, invocation);
 
         InlineResult result = InlineResult.create();
         for (MethodNode next : methodsToTransform) {
@@ -227,11 +227,27 @@ public class LambdaTransformer {
         );
     }
 
-    private void extractParametersMapping(@NotNull MethodNode constructor, @NotNull ParametersBuilder builder, @NotNull final ConstructorInvocation invocation) {
-        Map<Integer, LambdaInfo> indexToLambda = invocation.getLambdasToInline();
-
+    private void extractParametersMappingAndPatchConstructor(
+            @NotNull MethodNode constructor,
+            @NotNull ParametersBuilder builder,
+            @NotNull final ConstructorInvocation invocation
+    ) {
         AbstractInsnNode cur = constructor.instructions.getFirst();
-        cur = cur.getNext(); //skip super call
+
+        //skip super call
+        while (cur != null) {
+            if (cur.getType() == AbstractInsnNode.METHOD_INSN) {
+                MethodInsnNode node = (MethodInsnNode) cur;
+                //super constructor invocation
+                if ("<init>".equals(node.name) && Opcodes.INVOKESPECIAL == node.getOpcode()) {
+                    cur = cur.getNext();
+                    break;
+                }
+            }
+            cur = cur.getNext();
+        }
+
+        Map<Integer, LambdaInfo> indexToLambda = invocation.getLambdasToInline();
         List<LambdaInfo> capturedLambdas = new ArrayList<LambdaInfo>(); //captured var of inlined parameter
         CapturedParamOwner owner = new CapturedParamOwner() {
             @Override
@@ -240,21 +256,27 @@ public class LambdaTransformer {
             }
         };
 
+
+        //load captured parameters (NB: there is also could be object fields)
         while (cur != null) {
             if (cur.getType() == AbstractInsnNode.FIELD_INSN) {
                 FieldInsnNode fieldNode = (FieldInsnNode) cur;
                 CapturedParamInfo info = builder.addCapturedParam(owner, fieldNode.name, Type.getType(fieldNode.desc), false, null);
 
-                assert fieldNode.getPrevious() instanceof VarInsnNode : "Previous instruction should be VarInsnNode but was " + fieldNode.getPrevious();
-                VarInsnNode previous = (VarInsnNode) fieldNode.getPrevious();
-                int varIndex = previous.var;
-                LambdaInfo lambdaInfo = indexToLambda.get(varIndex);
-                if (lambdaInfo != null) {
-                    info.setLambda(lambdaInfo);
-                    capturedLambdas.add(lambdaInfo);
+                boolean isPrevVarNode = fieldNode.getPrevious() instanceof VarInsnNode;
+                boolean isPrevPrevVarNode = isPrevVarNode && fieldNode.getPrevious().getPrevious() instanceof VarInsnNode;
+                if (isPrevPrevVarNode) {
+                    VarInsnNode node = (VarInsnNode) fieldNode.getPrevious().getPrevious();
+                    if (node.var == 0) {
+                        VarInsnNode previous = (VarInsnNode) fieldNode.getPrevious();
+                        int varIndex = previous.var;
+                        LambdaInfo lambdaInfo = indexToLambda.get(varIndex);
+                        if (lambdaInfo != null) {
+                            info.setLambda(lambdaInfo);
+                            capturedLambdas.add(lambdaInfo);
+                        }
+                    }
                 }
-
-                addUniqueField(info.getOriginalFieldName());
             }
             cur = cur.getNext();
         }
