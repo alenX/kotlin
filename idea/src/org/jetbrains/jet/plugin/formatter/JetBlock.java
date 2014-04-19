@@ -317,7 +317,7 @@ public class JetBlock extends AbstractBlock {
         }
 
         // TODO: Try to rewrite other rules to declarative style
-        if (childParent != null && childParent.getElementType() == DOT_QUALIFIED_EXPRESSION) {
+        if (childParent != null && (childParent.getElementType() == DOT_QUALIFIED_EXPRESSION || childParent.getElementType() == SAFE_ACCESS_EXPRESSION)) {
             if (childParent.getFirstChildNode() != child && childParent.getLastChildNode() != child) {
                 return Indent.getContinuationWithoutFirstIndent(false);
             }
