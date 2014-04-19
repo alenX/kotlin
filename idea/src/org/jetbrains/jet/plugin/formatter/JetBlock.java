@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2013 JetBrains s.r.o.
+ * Copyright 2010-2014 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,14 +58,14 @@ public class JetBlock extends AbstractBlock {
 
     // private static final List<IndentWhitespaceRule>
 
-    public JetBlock(@NotNull ASTNode node,
+    public JetBlock(
+            @NotNull ASTNode node,
             ASTAlignmentStrategy alignmentStrategy,
             Indent indent,
             Wrap wrap,
             CodeStyleSettings settings,
             KotlinSpacingBuilder spacingBuilder
     ) {
-
         super(node, wrap, alignmentStrategy.getAlignment(node));
         myAlignmentStrategy = alignmentStrategy;
         myIndent = indent;
@@ -107,17 +107,15 @@ public class JetBlock extends AbstractBlock {
 
     @NotNull
     private Block buildSubBlock(@NotNull ASTNode child, ASTAlignmentStrategy alignmentStrategy) {
-        Wrap wrap = null;
-
-        // Affects to spaces around operators...
+        // Skip one sub-level for operators, so type of block node is an element type of operator
         if (child.getElementType() == OPERATION_REFERENCE) {
             ASTNode operationNode = child.getFirstChildNode();
             if (operationNode != null) {
-                return new JetBlock(operationNode, alignmentStrategy, Indent.getNoneIndent(), wrap, mySettings, mySpacingBuilder);
+                return new JetBlock(operationNode, alignmentStrategy, createChildIndent(child), null, mySettings, mySpacingBuilder);
             }
         }
 
-        return new JetBlock(child, alignmentStrategy, createChildIndent(child), wrap, mySettings, mySpacingBuilder);
+        return new JetBlock(child, alignmentStrategy, createChildIndent(child), null, mySettings, mySpacingBuilder);
     }
 
     private static Indent indentIfNotBrace(@NotNull ASTNode child) {
@@ -290,6 +288,10 @@ public class JetBlock extends AbstractBlock {
                     .in(DOT_QUALIFIED_EXPRESSION, SAFE_ACCESS_EXPRESSION)
                     .isLastChild(false)
                     .isFirstChild(false)
+                    .set(Indent.getContinuationWithoutFirstIndent(false)),
+
+            ASTIndentStrategy.forNode("Binary expressions")
+                    .in(BINARY_EXPRESSION)
                     .set(Indent.getContinuationWithoutFirstIndent(false)),
 
             ASTIndentStrategy.forNode("KDoc comment indent")
