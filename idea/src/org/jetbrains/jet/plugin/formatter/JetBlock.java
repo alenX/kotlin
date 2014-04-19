@@ -286,6 +286,12 @@ public class JetBlock extends AbstractBlock {
                     .notForType(BLOCK, FUN_KEYWORD, VAL_KEYWORD, VAR_KEYWORD)
                     .set(Indent.getContinuationWithoutFirstIndent()),
 
+            ASTIndentStrategy.forNode("Chained calls")
+                    .in(DOT_QUALIFIED_EXPRESSION, SAFE_ACCESS_EXPRESSION)
+                    .isLastChild(false)
+                    .isFirstChild(false)
+                    .set(Indent.getContinuationWithoutFirstIndent(false)),
+
             ASTIndentStrategy.forNode("KDoc comment indent")
                     .in(DOC_COMMENT)
                     .forType(KDocTokens.LEADING_ASTERISK, KDocTokens.END)
@@ -317,12 +323,6 @@ public class JetBlock extends AbstractBlock {
         }
 
         // TODO: Try to rewrite other rules to declarative style
-        if (childParent != null && (childParent.getElementType() == DOT_QUALIFIED_EXPRESSION || childParent.getElementType() == SAFE_ACCESS_EXPRESSION)) {
-            if (childParent.getFirstChildNode() != child && childParent.getLastChildNode() != child) {
-                return Indent.getContinuationWithoutFirstIndent(false);
-            }
-        }
-
         if (childParent != null) {
             IElementType parentType = childParent.getElementType();
 

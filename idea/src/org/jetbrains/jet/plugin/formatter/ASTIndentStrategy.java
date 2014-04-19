@@ -59,6 +59,8 @@ public abstract class ASTIndentStrategy {
         private final List<IElementType> notIn = new ArrayList<IElementType>();
         private final List<IElementType> forElement = new ArrayList<IElementType>();
         private final List<IElementType> notForElement = new ArrayList<IElementType>();
+        private Boolean isLastChild = null;
+        private Boolean isFirstChild = null;
 
         private final String debugInfo;
 
@@ -80,6 +82,16 @@ public abstract class ASTIndentStrategy {
             in.clear();
             in.add(parentType);
             Collections.addAll(in, orParentTypes);
+            return this;
+        }
+
+        public PositionStrategy isFirstChild(boolean isFirst) {
+            isFirstChild = isFirst;
+            return this;
+        }
+
+        public PositionStrategy isLastChild(boolean isLast) {
+            isLastChild = isLast;
             return this;
         }
 
@@ -142,9 +154,23 @@ public abstract class ASTIndentStrategy {
                 if (notIn.contains(parent.getElementType())) {
                     return null;
                 }
+
+                if (isFirstChild != null) {
+                    ASTNode firstNode = parent.getFirstChildNode();
+                    if ((firstNode == node) != isFirstChild.booleanValue()) {
+                        return null;
+                    }
+                }
+
+                if (isLastChild != null) {
+                    ASTNode lastNode = parent.getLastChildNode();
+                    if ((lastNode == node) != isLastChild.booleanValue()) {
+                        return null;
+                    }
+                }
             }
             else {
-                if (!in.isEmpty()) {
+                if (!in.isEmpty() || isFirstChild || isLastChild) {
                     return null;
                 }
             }
