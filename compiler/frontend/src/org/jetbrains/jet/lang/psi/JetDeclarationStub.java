@@ -37,12 +37,6 @@ abstract class JetDeclarationStub<T extends StubElement> extends JetModifierList
     }
 
     @Override
-    @Nullable
-    public JetModifierList getModifierList() {
-        return getStubOrPsiChild(JetStubElementTypes.MODIFIER_LIST);
-    }
-
-    @Override
     public boolean hasModifier(JetModifierKeywordToken modifier) {
         JetModifierList modifierList = getModifierList();
         return modifierList != null && modifierList.hasModifier(modifier);
