@@ -1454,16 +1454,7 @@ public class DescriptorResolver {
             @NotNull BindingTrace trace,
             @NotNull JetParameter parameter
     ) {
-        JetModifierList modifierList = parameter.getModifierList();
-        if (modifierList != null) {
-            for (JetModifierKeywordToken illegalModifierType : MODIFIERS_ILLEGAL_ON_PARAMETERS) {
-                if (modifierList.hasModifier(illegalModifierType)) {
-                    PsiElement illegalModifier = modifierList.getModifier(illegalModifierType);
-                    assert illegalModifier != null;
-                    trace.report(ILLEGAL_MODIFIER.on(illegalModifier, illegalModifierType));
-                }
-            }
-        }
+        ModifiersChecker.reportIllegalModifiers(parameter.getModifierList(), MODIFIERS_ILLEGAL_ON_PARAMETERS, trace);
     }
 
     public static void resolvePackageHeader(
