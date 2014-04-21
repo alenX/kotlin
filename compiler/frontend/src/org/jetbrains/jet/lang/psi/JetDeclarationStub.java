@@ -35,26 +35,4 @@ abstract class JetDeclarationStub<T extends StubElement> extends JetModifierList
     public JetDeclarationStub(@NotNull ASTNode node) {
         super(node);
     }
-
-    @Override
-    public boolean hasModifier(JetModifierKeywordToken modifier) {
-        JetModifierList modifierList = getModifierList();
-        return modifierList != null && modifierList.hasModifier(modifier);
-    }
-
-    @NotNull
-    @Override
-    public List<JetAnnotationEntry> getAnnotationEntries() {
-        JetModifierList modifierList = getModifierList();
-        if (modifierList == null) return Collections.emptyList();
-        return modifierList.getAnnotationEntries();
-    }
-
-    @NotNull
-    @Override
-    public List<JetAnnotation> getAnnotations() {
-        JetModifierList modifierList = getModifierList();
-        if (modifierList == null) return Collections.emptyList();
-        return modifierList.getAnnotations();
-    }
 }
