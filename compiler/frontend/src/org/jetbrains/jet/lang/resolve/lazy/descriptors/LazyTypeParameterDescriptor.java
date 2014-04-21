@@ -79,7 +79,7 @@ public class LazyTypeParameterDescriptor extends AbstractLazyTypeParameterDescri
     }
 
     private void resolveUpperBoundsFromWhereClause(Set<JetType> upperBounds) {
-        JetClassOrObject classOrObject = JetStubbedPsiUtil.getContainingDeclaration(jetTypeParameter, JetClassOrObject.class, true);
+        JetClassOrObject classOrObject = JetStubbedPsiUtil.getPsiOrStubParent(jetTypeParameter, JetClassOrObject.class, true);
         if (classOrObject instanceof JetClass) {
             JetClass jetClass = (JetClass) classOrObject;
             for (JetTypeConstraint jetTypeConstraint : jetClass.getTypeConstraints()) {
