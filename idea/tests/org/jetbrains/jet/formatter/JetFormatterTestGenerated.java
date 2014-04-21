@@ -417,6 +417,11 @@ public class JetFormatterTestGenerated extends AbstractJetFormatterTest {
             JetTestUtils.assertAllTestsPresentByMetadata(this.getClass(), "org.jetbrains.jet.generators.tests.TestsPackage", new File("idea/testData/formatter"), Pattern.compile("^([^\\.]+)\\.after\\.inv\\.kt.*$"), true);
         }
         
+        @TestMetadata("BinaryExpressions.after.inv.kt")
+        public void testBinaryExpressions() throws Exception {
+            doTestInverted("idea/testData/formatter/BinaryExpressions.after.inv.kt");
+        }
+        
         @TestMetadata("CatchFinallyOnNewLine.after.inv.kt")
         public void testCatchFinallyOnNewLine() throws Exception {
             doTestInverted("idea/testData/formatter/CatchFinallyOnNewLine.after.inv.kt");

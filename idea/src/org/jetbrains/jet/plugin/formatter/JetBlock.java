@@ -186,25 +186,27 @@ public class JetBlock extends AbstractBlock {
         CommonCodeStyleSettings jetCommonSettings = mySettings.getCommonSettings(JetLanguage.INSTANCE);
         JetCodeStyleSettings jetSettings = mySettings.getCustomSettings(JetCodeStyleSettings.class);
 
-        // Prepare default null strategy
-        NodeAlignmentStrategy strategy = myAlignmentStrategy;
-
         // Redefine list of strategies for some special elements
         IElementType parentType = myNode.getElementType();
         if (parentType == VALUE_PARAMETER_LIST) {
-            strategy = getAlignmentForChildInParenthesis(
+            return getAlignmentForChildInParenthesis(
                     jetCommonSettings.ALIGN_MULTILINE_PARAMETERS, VALUE_PARAMETER, COMMA,
                     jetCommonSettings.ALIGN_MULTILINE_METHOD_BRACKETS, LPAR, RPAR);
         }
         else if (parentType == VALUE_ARGUMENT_LIST) {
-            strategy = getAlignmentForChildInParenthesis(
+            return getAlignmentForChildInParenthesis(
                     jetCommonSettings.ALIGN_MULTILINE_PARAMETERS_IN_CALLS, VALUE_ARGUMENT, COMMA,
                     jetCommonSettings.ALIGN_MULTILINE_METHOD_BRACKETS, LPAR, RPAR);
         }
         else if (parentType == WHEN) {
-            strategy = getAlignmentForCaseBranch(jetSettings.ALIGN_IN_COLUMNS_CASE_BRANCH);
+            return getAlignmentForCaseBranch(jetSettings.ALIGN_IN_COLUMNS_CASE_BRANCH);
         }
-        return strategy;
+        else if (parentType == BINARY_EXPRESSION) {
+            return NodeAlignmentStrategy.fromTypes(AlignmentStrategy.wrap(
+                    createAlignment(jetCommonSettings.ALIGN_MULTILINE_BINARY_OPERATION, getAlignment())));
+        }
+
+        return myAlignmentStrategy;
     }
 
     private static NodeAlignmentStrategy getAlignmentForChildInParenthesis(
@@ -342,5 +344,23 @@ public class JetBlock extends AbstractBlock {
         }
 
         return Indent.getNoneIndent();
+    }
+
+    @Nullable
+    private static Alignment createAlignment(final boolean alignOption, @Nullable final Alignment defaultAlignment) {
+        return alignOption ? createAlignmentOrDefault(null, defaultAlignment) : defaultAlignment;
+    }
+
+    @Nullable
+    private static Alignment createAlignment(Alignment base, final boolean alignOption, @Nullable final Alignment defaultAlignment) {
+        return alignOption ? createAlignmentOrDefault(base, defaultAlignment) : defaultAlignment;
+    }
+
+    @Nullable
+    private static Alignment createAlignmentOrDefault(@Nullable Alignment base, @Nullable final Alignment defaultAlignment) {
+        if (defaultAlignment == null) {
+            return base == null ? Alignment.createAlignment() : Alignment.createChildAlignment(base);
+        }
+        return defaultAlignment;
     }
 }
