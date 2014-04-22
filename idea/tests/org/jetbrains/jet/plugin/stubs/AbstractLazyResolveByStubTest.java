@@ -24,6 +24,8 @@ import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.util.Consumer;
+import kotlin.Function0;
+import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
 import org.jetbrains.jet.lang.descriptors.PackageViewDescriptor;
@@ -51,12 +53,25 @@ public abstract class AbstractLazyResolveByStubTest extends CodeInsightTestCase 
         doTest(testFileName, false, false);
     }
 
-    public void doTest(@NotNull String path, boolean checkPrimaryConstructors, boolean checkPropertyAccessors) throws Exception {
+    public void doTest(@NotNull final String path, final boolean checkPrimaryConstructors, final boolean checkPropertyAccessors)
+            throws Exception {
         configureByFile(path);
-        JetFile file = (JetFile) getFile();
-        AstAccessControl.instance$.prohibitAstAccessForKotlinFiles(getProject(), getTestRootDisposable());
         configureModule(getModule(), JetWithJdkAndRuntimeLightProjectDescriptor.INSTANCE);
-        ResolveSessionForBodies resolveSession = AnalyzerFacadeWithCache.getLazyResolveSessionForFile(file);
+        boolean shouldFail = getTestName(false).equals("ClassWithConstVal");
+        AstAccessControl.instance$.testWithControlledAccessToAst(
+                shouldFail, getProject(), getTestRootDisposable(),
+                new Function0<Unit>() {
+                    @Override
+                    public Unit invoke() {
+                        performTest(path, checkPrimaryConstructors, checkPropertyAccessors);
+                        return Unit.VALUE;
+                    }
+                }
+        );
+    }
+
+    private void performTest(@NotNull String path, boolean checkPrimaryConstructors, boolean checkPropertyAccessors) {
+        ResolveSessionForBodies resolveSession = AnalyzerFacadeWithCache.getLazyResolveSessionForFile((JetFile) getFile());
         ModuleDescriptor module = resolveSession.getModuleDescriptor();
         PackageViewDescriptor packageViewDescriptor = module.getPackage(new FqName("test"));
         Assert.assertNotNull(packageViewDescriptor);
