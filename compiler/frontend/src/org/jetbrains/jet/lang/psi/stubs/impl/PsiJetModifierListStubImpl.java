@@ -30,7 +30,7 @@ import static org.jetbrains.jet.lexer.JetTokens.MODIFIER_KEYWORDS_ARRAY;
 public class PsiJetModifierListStubImpl extends StubBase<JetModifierList> implements PsiJetModifierListStub {
 
     static {
-        assert MODIFIER_KEYWORDS_ARRAY.length <= 31 : "Current implementation depends on the ability to represent modifier list as bit mask";
+        assert MODIFIER_KEYWORDS_ARRAY.length <= 32 : "Current implementation depends on the ability to represent modifier list as bit mask";
     }
 
     public static int computeMaskFromPsi(@NotNull JetModifierList modifierList) {
