@@ -136,9 +136,13 @@ public class JetNamedFunction extends JetTypeParameterListOwnerStub<PsiJetFuncti
             if (!stub.isExtension()) {
                 return null;
             }
-            JetTypeReference[] typeReferences = stub.getChildrenByType(JetStubElementTypes.TYPE_REFERENCE, new JetTypeReference[] {});
-            //TODO: really?
-            return typeReferences[0];
+            List<JetTypeReference> childTypeReferences = getStubOrPsiChildrenAsList(JetStubElementTypes.TYPE_REFERENCE);
+            if (!childTypeReferences.isEmpty()) {
+                return childTypeReferences.get(0);
+            }
+            else {
+                return null;
+            }
         }
         return getReceiverTypeRefByTree();
     }
@@ -167,7 +171,7 @@ public class JetNamedFunction extends JetTypeParameterListOwnerStub<PsiJetFuncti
             //array factory
             JetTypeReference[] typeReferences = stub.getChildrenByType(JetStubElementTypes.TYPE_REFERENCE, new JetTypeReference[] {});
             int returnTypeIndex = stub.isExtension() ? 1 : 0;
-            if (typeReferences.length < returnTypeIndex + 1) {
+            if (returnTypeIndex >= typeReferences.length) {
                 return null;
             }
             return typeReferences[returnTypeIndex];
