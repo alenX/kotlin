@@ -708,17 +708,16 @@ public class DescriptorResolver {
             @NotNull TypeParameterDescriptor parameter,
             @NotNull JetTypeParameter typeParameter
     ) {
-        //TODO: use positioning strategy
         if (KotlinBuiltIns.getInstance().isNothing(parameter.getUpperBoundsAsType())) {
             if (typeParameter.getNameIdentifier() != null) {
-                trace.report(CONFLICTING_UPPER_BOUNDS.on(typeParameter.getNameIdentifier(), parameter));
+                trace.report(CONFLICTING_UPPER_BOUNDS.on(typeParameter, parameter));
             }
         }
 
         JetType classObjectType = parameter.getClassObjectType();
         if (classObjectType != null && KotlinBuiltIns.getInstance().isNothing(classObjectType)) {
             if (typeParameter.getNameIdentifier() != null) {
-                trace.report(CONFLICTING_CLASS_OBJECT_UPPER_BOUNDS.on(typeParameter.getNameIdentifier(), parameter));
+                trace.report(CONFLICTING_CLASS_OBJECT_UPPER_BOUNDS.on(typeParameter, parameter));
             }
         }
     }
