@@ -32,14 +32,23 @@ import static org.jetbrains.jet.lang.resolve.BindingContext.RESOLVED_CALL;
 
 public class TracingStrategyForInvoke extends AbstractTracingStrategy {
     private final JetType calleeType;
+    private final boolean recordCall;
 
     public TracingStrategyForInvoke(
             @NotNull JetExpression reference,
             @NotNull Call call,
-            @NotNull JetType calleeType
+            @NotNull JetType calleeType,
+            boolean recordCall
     ) {
         super(reference, call);
         this.calleeType = calleeType;
+        this.recordCall = recordCall;
+    }
+
+    @Override
+    public void bindCall(@NotNull BindingTrace trace, @NotNull Call call) {
+        if (!recordCall) return;
+        trace.record(CALL, reference, call);
     }
 
     @Override
@@ -53,7 +62,6 @@ public class TracingStrategyForInvoke extends AbstractTracingStrategy {
             @NotNull BindingTrace trace, @NotNull ResolvedCall<D> resolvedCall
     ) {
         trace.record(RESOLVED_CALL, reference, resolvedCall);
-        trace.record(CALL, reference, call);
     }
 
     @Override

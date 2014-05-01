@@ -207,7 +207,7 @@ public class CallTransformer<D extends CallableDescriptor, F extends D> {
 
             // 'invoke' call resolve
             TracingStrategyForInvoke tracingForInvoke = new TracingStrategyForInvoke(
-                    calleeExpression, functionCall, variableReceiver.getType());
+                    calleeExpression, functionCall, variableReceiver.getType(), /* recordCall = */false);
             OverloadResolutionResults<FunctionDescriptor> results = callResolver.resolveCallForInvoke(
                     basicCallResolutionContext, tracingForInvoke);
             Collection<MutableResolvedCall<FunctionDescriptor>> calls = ((OverloadResolutionResultsImpl<FunctionDescriptor>)results).getResultingCalls();
