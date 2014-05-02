@@ -483,8 +483,24 @@ public class ExpressionTypingUtils {
                 || operationType == JetTokens.ELVIS);
     }
 
-    public static boolean  isUnaryExpressionDependentOnExpectedType(@NotNull JetUnaryExpression expression) {
+    public static boolean isUnaryExpressionDependentOnExpectedType(@NotNull JetUnaryExpression expression) {
         IElementType operationType = expression.getOperationReference().getReferencedNameElementType();
         return JetTokens.LABELS.contains(operationType) || operationType == JetTokens.EXCLEXCL;
+    }
+
+    public static boolean dependsOnExpectedType(@Nullable JetExpression expression) {
+        JetExpression expr = JetPsiUtil.deparenthesize(expression, false);
+        if (expr == null) return false;
+
+        if (expr instanceof JetBinaryExpressionWithTypeRHS) {
+            return false;
+        }
+        if (expr instanceof JetBinaryExpression) {
+            return isBinaryExpressionDependentOnExpectedType((JetBinaryExpression) expr);
+        }
+        if (expr instanceof JetUnaryExpression) {
+            return isUnaryExpressionDependentOnExpectedType((JetUnaryExpression) expr);
+        }
+        return true;
     }
 }
