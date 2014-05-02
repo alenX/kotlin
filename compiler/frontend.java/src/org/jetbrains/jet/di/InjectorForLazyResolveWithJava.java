@@ -48,6 +48,7 @@ import org.jetbrains.jet.lang.resolve.DelegatedPropertyResolver;
 import org.jetbrains.jet.lang.resolve.TypeResolver;
 import org.jetbrains.jet.lang.resolve.QualifiedExpressionResolver;
 import org.jetbrains.jet.lang.resolve.calls.CallResolverExtensionProvider;
+import org.jetbrains.jet.lang.resolve.calls.CallCompleter;
 import org.jetbrains.jet.lang.resolve.calls.CandidateResolver;
 import org.jetbrains.jet.lang.psi.JetImportsFactory;
 import org.jetbrains.jet.lang.resolve.lazy.ScopeProvider;
@@ -99,6 +100,7 @@ public class InjectorForLazyResolveWithJava {
     private final TypeResolver typeResolver;
     private final QualifiedExpressionResolver qualifiedExpressionResolver;
     private final CallResolverExtensionProvider callResolverExtensionProvider;
+    private final CallCompleter callCompleter;
     private final CandidateResolver candidateResolver;
     private final JetImportsFactory jetImportsFactory;
     private final ScopeProvider scopeProvider;
@@ -153,6 +155,7 @@ public class InjectorForLazyResolveWithJava {
         this.typeResolver = new TypeResolver();
         this.qualifiedExpressionResolver = new QualifiedExpressionResolver();
         this.callResolverExtensionProvider = new CallResolverExtensionProvider();
+        this.callCompleter = new CallCompleter();
         this.candidateResolver = new CandidateResolver();
         this.jetImportsFactory = new JetImportsFactory();
         this.scopeProvider = new ScopeProvider(getResolveSession());
@@ -190,6 +193,7 @@ public class InjectorForLazyResolveWithJava {
         annotationResolver.setTypeResolver(typeResolver);
 
         callResolver.setArgumentTypeResolver(argumentTypeResolver);
+        callResolver.setCallCompleter(callCompleter);
         callResolver.setCandidateResolver(candidateResolver);
         callResolver.setExpressionTypingServices(expressionTypingServices);
         callResolver.setTypeResolver(typeResolver);
@@ -231,6 +235,9 @@ public class InjectorForLazyResolveWithJava {
         typeResolver.setAnnotationResolver(annotationResolver);
         typeResolver.setModuleDescriptor(module);
         typeResolver.setQualifiedExpressionResolver(qualifiedExpressionResolver);
+
+        callCompleter.setArgumentTypeResolver(argumentTypeResolver);
+        callCompleter.setCandidateResolver(candidateResolver);
 
         candidateResolver.setArgumentTypeResolver(argumentTypeResolver);
 

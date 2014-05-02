@@ -28,6 +28,7 @@ import org.jetbrains.jet.storage.StorageManager;
 import org.jetbrains.jet.lang.resolve.AnnotationResolver;
 import org.jetbrains.jet.lang.resolve.calls.CallResolver;
 import org.jetbrains.jet.lang.resolve.calls.ArgumentTypeResolver;
+import org.jetbrains.jet.lang.resolve.calls.CallCompleter;
 import org.jetbrains.jet.lang.resolve.calls.CandidateResolver;
 import org.jetbrains.jet.lang.resolve.DelegatedPropertyResolver;
 import org.jetbrains.jet.lang.types.expressions.ExpressionTypingComponents;
@@ -55,6 +56,7 @@ public class InjectorForTests {
     private final AnnotationResolver annotationResolver;
     private final CallResolver callResolver;
     private final ArgumentTypeResolver argumentTypeResolver;
+    private final CallCompleter callCompleter;
     private final CandidateResolver candidateResolver;
     private final DelegatedPropertyResolver delegatedPropertyResolver;
     private final ExpressionTypingComponents expressionTypingComponents;
@@ -81,6 +83,7 @@ public class InjectorForTests {
         this.storageManager = globalContext.getStorageManager();
         this.annotationResolver = new AnnotationResolver();
         this.argumentTypeResolver = new ArgumentTypeResolver();
+        this.callCompleter = new CallCompleter();
         this.candidateResolver = new CandidateResolver();
         this.delegatedPropertyResolver = new DelegatedPropertyResolver();
         this.controlStructureTypingUtils = new ControlStructureTypingUtils(getExpressionTypingServices());
@@ -112,12 +115,16 @@ public class InjectorForTests {
         annotationResolver.setTypeResolver(typeResolver);
 
         callResolver.setArgumentTypeResolver(argumentTypeResolver);
+        callResolver.setCallCompleter(callCompleter);
         callResolver.setCandidateResolver(candidateResolver);
         callResolver.setExpressionTypingServices(expressionTypingServices);
         callResolver.setTypeResolver(typeResolver);
 
         argumentTypeResolver.setExpressionTypingServices(expressionTypingServices);
         argumentTypeResolver.setTypeResolver(typeResolver);
+
+        callCompleter.setArgumentTypeResolver(argumentTypeResolver);
+        callCompleter.setCandidateResolver(candidateResolver);
 
         candidateResolver.setArgumentTypeResolver(argumentTypeResolver);
 
