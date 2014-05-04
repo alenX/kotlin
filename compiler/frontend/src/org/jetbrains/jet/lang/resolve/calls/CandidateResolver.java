@@ -83,13 +83,11 @@ public class CandidateResolver {
 
         if (ErrorUtils.isError(candidate)) {
             candidateCall.addStatus(SUCCESS);
-            markAllArgumentsAsUnmapped(context);
             return;
         }
 
         if (!checkOuterClassMemberIsAccessible(context)) {
             candidateCall.addStatus(OTHER_ERROR);
-            markAllArgumentsAsUnmapped(context);
             return;
         }
 
@@ -99,7 +97,6 @@ public class CandidateResolver {
         if (invisibleMember != null) {
             candidateCall.addStatus(OTHER_ERROR);
             context.tracing.invisibleMember(context.trace, invisibleMember);
-            markAllArgumentsAsUnmapped(context);
             return;
         }
 
@@ -108,7 +105,6 @@ public class CandidateResolver {
             ValueArgumentsToParametersMapper.Status argumentMappingStatus = ValueArgumentsToParametersMapper.mapValueArgumentsToParameters(
                     context.call, context.tracing, candidateCall, unmappedArguments);
             if (!argumentMappingStatus.isSuccess()) {
-                candidateCall.addUnmappedArguments(unmappedArguments);
                 //For the expressions like '42.(f)()' where f: () -> Unit we'd like to generate an error 'no receiver admitted',
                 //not to throw away the candidate.
                 if (argumentMappingStatus == ValueArgumentsToParametersMapper.Status.STRONG_ERROR
@@ -170,12 +166,6 @@ public class CandidateResolver {
         if (superExpression != null) {
             context.trace.report(SUPER_IS_NOT_AN_EXPRESSION.on(superExpression, superExpression.getText()));
             candidateCall.addStatus(OTHER_ERROR);
-        }
-    }
-
-    private static void markAllArgumentsAsUnmapped(CallCandidateResolutionContext<?> context) {
-        if (context.checkArguments == CheckValueArgumentsMode.ENABLED) {
-            context.candidateCall.addUnmappedArguments(context.call.getValueArguments());
         }
     }
 
