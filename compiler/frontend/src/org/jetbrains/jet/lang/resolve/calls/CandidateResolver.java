@@ -21,13 +21,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.intellij.openapi.progress.ProgressIndicatorProvider;
-import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.*;
-import org.jetbrains.jet.lang.resolve.bindingContextUtil.BindingContextUtilPackage;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.AutoCastUtils;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
 import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowValue;
@@ -35,17 +33,14 @@ import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowValueFactory;
 import org.jetbrains.jet.lang.resolve.calls.context.*;
 import org.jetbrains.jet.lang.resolve.calls.inference.*;
 import org.jetbrains.jet.lang.resolve.calls.model.*;
-import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResultsImpl;
 import org.jetbrains.jet.lang.resolve.calls.results.ResolutionDebugInfo;
 import org.jetbrains.jet.lang.resolve.calls.results.ResolutionStatus;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ResolutionTask;
 import org.jetbrains.jet.lang.resolve.calls.tasks.TaskPrioritizer;
-import org.jetbrains.jet.lang.resolve.calls.tasks.TracingStrategy;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ExpressionReceiver;
 import org.jetbrains.jet.lang.resolve.scopes.receivers.ReceiverValue;
 import org.jetbrains.jet.lang.types.*;
 import org.jetbrains.jet.lang.types.checker.JetTypeChecker;
-import org.jetbrains.jet.lang.types.expressions.DataFlowUtils;
 import org.jetbrains.jet.lang.types.expressions.ExpressionTypingUtils;
 import org.jetbrains.jet.lang.types.lang.KotlinBuiltIns;
 
@@ -302,12 +297,8 @@ public class CandidateResolver {
                 // Here we type check expecting an error type (DONT_CARE, substitution with substituteDontCare)
                 // and throw the results away
                 // We'll type check the arguments later, with the inferred types expected
-                boolean[] isErrorType = new boolean[1];
                 addConstraintForValueArgument(valueArgument, valueParameterDescriptor, substituteDontCare, constraintSystem,
-                                              context, isErrorType, SHAPE_FUNCTION_ARGUMENTS);
-                if (isErrorType[0]) {
-                    candidateCall.argumentHasNoType();
-                }
+                                              context, SHAPE_FUNCTION_ARGUMENTS);
             }
         }
 
@@ -353,7 +344,6 @@ public class CandidateResolver {
             @NotNull TypeSubstitutor substitutor,
             @NotNull ConstraintSystem constraintSystem,
             @NotNull CallCandidateResolutionContext<?> context,
-            @Nullable boolean[] isErrorType,
             @NotNull CallResolverUtil.ResolveArgumentsMode resolveFunctionArgumentBodies) {
 
         JetType effectiveExpectedType = getEffectiveExpectedType(valueParameterDescriptor, valueArgument);
@@ -370,9 +360,6 @@ public class CandidateResolver {
         JetType type = updateResultTypeForSmartCasts(typeInfoForCall.getType(), argumentExpression, dataFlowInfoForArgument, context.trace);
         constraintSystem.addSubtypeConstraint(type, effectiveExpectedType, ConstraintPosition.getValueParameterPosition(
                 valueParameterDescriptor.getIndex()));
-        if (isErrorType != null) {
-            isErrorType[0] = type == null || type.isError();
-        }
     }
 
     @Nullable
@@ -473,11 +460,10 @@ public class CandidateResolver {
                 JetType type = typeInfoForCall.getType();
                 infoForArguments.updateInfo(argument, typeInfoForCall.getDataFlowInfo());
 
-                boolean hasTypeMismatch = false;
+                ArgumentMatchStatus matchStatus = ArgumentMatchStatus.SUCCESS;
                 if (type == null || (type.isError() && type != PLACEHOLDER_FUNCTION_TYPE)) {
-                    candidateCall.argumentHasNoType();
                     argumentTypes.add(type);
-                    hasTypeMismatch = true;
+                    matchStatus = ArgumentMatchStatus.ARGUMENT_HAS_NO_TYPE;
                 }
                 else {
                     JetType resultingType;
@@ -489,13 +475,13 @@ public class CandidateResolver {
                         if (resultingType == null) {
                             resultingType = type;
                             resultStatus = OTHER_ERROR;
-                            hasTypeMismatch = true;
+                            matchStatus = ArgumentMatchStatus.TYPE_MISMATCH;
                         }
                     }
 
                     argumentTypes.add(resultingType);
                 }
-                candidateCall.recordArgumentMatch(argument, parameterDescriptor, hasTypeMismatch);
+                candidateCall.recordArgumentMatch(argument, parameterDescriptor, matchStatus);
             }
         }
         return new ValueArgumentsCheckingResult(resultStatus, argumentTypes);
