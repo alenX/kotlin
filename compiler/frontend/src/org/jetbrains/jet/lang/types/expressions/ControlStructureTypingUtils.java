@@ -169,7 +169,7 @@ public class ControlStructureTypingUtils {
     ) {
         final List<ValueArgument> valueArguments = Lists.newArrayList();
         for (JetExpression argument : arguments) {
-            valueArguments.add(CallMaker.makeValueArgument(argument, argument));
+            valueArguments.add(CallMaker.makeValueArgument(argument));
         }
         return new Call() {
             @Nullable

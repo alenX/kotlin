@@ -125,15 +125,6 @@ public class ArgumentTypeResolver {
         }
     }
 
-    public void checkUnmappedArgumentTypes(CallResolutionContext<?> context, Set<ValueArgument> unmappedArguments) {
-        for (ValueArgument valueArgument : unmappedArguments) {
-            JetExpression argumentExpression = valueArgument.getArgumentExpression();
-            if (argumentExpression != null) {
-                checkArgumentTypeWithNoCallee(context, argumentExpression);
-            }
-        }
-    }
-
     private void checkArgumentTypeWithNoCallee(CallResolutionContext<?> context, JetExpression argumentExpression) {
         expressionTypingServices.getTypeInfo(argumentExpression, context.replaceExpectedType(NO_EXPECTED_TYPE));
         updateResultArgumentTypeIfNotDenotable(context, argumentExpression);
@@ -260,7 +251,7 @@ public class ArgumentTypeResolver {
     }
 
     @Nullable
-    public static <D extends CallableDescriptor> JetType updateResultArgumentTypeIfNotDenotable(
+    public static JetType updateResultArgumentTypeIfNotDenotable(
             @NotNull ResolutionContext context,
             @NotNull JetExpression expression
     ) {
