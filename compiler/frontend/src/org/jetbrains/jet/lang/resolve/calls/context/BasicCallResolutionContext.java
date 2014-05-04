@@ -97,6 +97,7 @@ public class BasicCallResolutionContext extends CallResolutionContext<BasicCallR
                 labelResolver, dataFlowInfoForArguments, callResolverExtension, isAnnotationContext, collectAllCandidates);
     }
 
+    @NotNull
     public BasicCallResolutionContext replaceCall(@NotNull Call newCall) {
         return new BasicCallResolutionContext(
                 trace, scope, newCall, expectedType, dataFlowInfo, contextDependency, checkArguments, resolutionResultsCache,
