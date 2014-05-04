@@ -192,7 +192,7 @@ public class CandidateResolver {
     ) {
         MutableResolvedCall<D> resolvedCall = context.candidateCall;
         ConstraintSystem constraintSystem = resolvedCall.getConstraintSystem();
-        if (!resolvedCall.hasIncompleteTypeParameters() || constraintSystem == null) return;
+        if (constraintSystem == null) return;
 
         // constraints for function literals
         // Value parameters
@@ -341,7 +341,6 @@ public class CandidateResolver {
 
         // Solution
         boolean hasContradiction = constraintSystem.getStatus().hasContradiction();
-        candidateCall.setHasIncompleteTypeParameters(true);
         if (!hasContradiction) {
             return INCOMPLETE_TYPE_INFERENCE;
         }
