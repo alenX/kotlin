@@ -124,6 +124,14 @@ public class Renderers {
         }
     };
 
+    public static final Renderer<JetType> RENDER_TYPE_SHORT = new Renderer<JetType>() {
+        @NotNull
+        @Override
+        public String render(@NotNull JetType type) {
+            return DescriptorRenderer.SHORT_NAMES_IN_TYPES.renderType(type);
+        }
+    };
+
     public static final Renderer<Collection<? extends ResolvedCall<?>>> AMBIGUOUS_CALLS =
             new Renderer<Collection<? extends ResolvedCall<?>>>() {
                 @NotNull
