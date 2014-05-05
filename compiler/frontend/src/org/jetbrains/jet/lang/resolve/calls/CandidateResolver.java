@@ -461,26 +461,26 @@ public class CandidateResolver {
                 infoForArguments.updateInfo(argument, typeInfoForCall.getDataFlowInfo());
 
                 ArgumentMatchStatus matchStatus = ArgumentMatchStatus.SUCCESS;
+                JetType resultingType = type;
                 if (type == null || (type.isError() && type != PLACEHOLDER_FUNCTION_TYPE)) {
-                    argumentTypes.add(type);
                     matchStatus = ArgumentMatchStatus.ARGUMENT_HAS_NO_TYPE;
                 }
-                else {
-                    JetType resultingType;
-                    if (noExpectedType(expectedType) || ArgumentTypeResolver.isSubtypeOfForArgumentType(type, expectedType)) {
-                        resultingType = type;
-                    }
-                    else {
-                        resultingType = autocastValueArgumentTypeIfPossible(expression, expectedType, type, newContext);
-                        if (resultingType == null) {
-                            resultingType = type;
+                else if (!noExpectedType(expectedType)) {
+                    if (!ArgumentTypeResolver.isSubtypeOfForArgumentType(type, expectedType)) {
+                        JetType autocastedType = autocastValueArgumentTypeIfPossible(expression, expectedType, type, newContext);
+                        if (autocastedType == null) {
                             resultStatus = OTHER_ERROR;
                             matchStatus = ArgumentMatchStatus.TYPE_MISMATCH;
                         }
+                        else {
+                            resultingType = autocastedType;
+                        }
                     }
-
-                    argumentTypes.add(resultingType);
+                    else if (ErrorUtils.containsUninferredParameter(expectedType)) {
+                        matchStatus = ArgumentMatchStatus.UNINFERRED_TYPE_IN_PARAMETER;
+                    }
                 }
+                argumentTypes.add(resultingType);
                 candidateCall.recordArgumentMatch(argument, parameterDescriptor, matchStatus);
             }
         }

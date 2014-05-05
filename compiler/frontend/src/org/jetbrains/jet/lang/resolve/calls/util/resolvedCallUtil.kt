@@ -42,11 +42,14 @@ fun <D : CallableDescriptor> ResolvedCall<D>.hasUnmappedParameters(): Boolean {
     return !parameterToArgumentMap.keySet().containsAll(getResultingDescriptor().getValueParameters())
 }
 
-fun <D : CallableDescriptor> ResolvedCall<D>.hasErrorOnParameter(parameter: ValueParameterDescriptor): Boolean {
+fun <D : CallableDescriptor> ResolvedCall<D>.hasTypeMismatchErrorOnParameter(parameter: ValueParameterDescriptor): Boolean {
     val resolvedValueArgument = getValueArguments()[parameter]
     if (resolvedValueArgument == null) return true
 
-    return resolvedValueArgument.getArguments().any { argument -> getArgumentMapping(argument).isError() }
+    return resolvedValueArgument.getArguments().any { argument ->
+        val argumentMapping = getArgumentMapping(argument)
+        argumentMapping is ArgumentMatch && argumentMapping.status == ArgumentMatchStatus.TYPE_MISMATCH
+    }
 }
 
 fun <D : CallableDescriptor> ResolvedCall<D>.isDirty(): Boolean {

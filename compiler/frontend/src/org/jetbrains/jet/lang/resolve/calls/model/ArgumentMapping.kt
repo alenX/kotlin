@@ -26,10 +26,11 @@ object ArgumentUnmapped: ArgumentMapping {
     override fun isError(): Boolean = true
 }
 
-enum class ArgumentMatchStatus(val isError: Boolean) {
+enum class ArgumentMatchStatus(val isError: Boolean = true) {
     SUCCESS : ArgumentMatchStatus(false)
-    TYPE_MISMATCH : ArgumentMatchStatus(true)
-    ARGUMENT_HAS_NO_TYPE : ArgumentMatchStatus(true)
+    TYPE_MISMATCH : ArgumentMatchStatus()
+    ARGUMENT_HAS_NO_TYPE : ArgumentMatchStatus()
+    UNINFERRED_TYPE_IN_PARAMETER : ArgumentMatchStatus()
 }
 
 class ArgumentMatch(val valueParameter: ValueParameterDescriptor, val status: ArgumentMatchStatus): ArgumentMapping {
