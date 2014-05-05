@@ -707,6 +707,11 @@
     </intentionAction>
 
     <intentionAction>
+      <className>org.jetbrains.jet.plugin.intentions.ConvertToStringTemplateIntention</className>
+      <category>Kotlin</category>
+    </intentionAction>
+
+    <intentionAction>
       <className>org.jetbrains.jet.plugin.intentions.OperatorToFunctionIntention</className>
       <category>Kotlin</category>
     </intentionAction>
@@ -746,13 +751,7 @@
         level="WARNING"
         />
 
-    <intentionAction>
-      <className>org.jetbrains.jet.plugin.intentions.InvertIfConditionIntention</className>
-      <category>Kotlin</category>
-    </intentionAction>
-
     <project.converterProvider implementation="org.jetbrains.jet.plugin.converters.JetRunConfigurationSettingsFormatConverterProvider"/>
-
 
   </extensions>
 
