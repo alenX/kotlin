@@ -119,11 +119,24 @@ public class JetParsing extends AbstractJetParsing {
         myExpressionParsing.parseExpression();
 
         while (!eof()) {
-            error("unexpected symbol");
-            advance();
+            errorAndAdvance("unexpected symbol");
         }
 
         marker.done(EXPRESSION_CODE_FRAGMENT);
+    }
+
+    void parseBlockCodeFragment() {
+        PsiBuilder.Marker marker = mark();
+        PsiBuilder.Marker blockMarker = mark();
+
+        myExpressionParsing.parseStatements();
+
+        while (!eof()) {
+            errorAndAdvance("unexpected symbol");
+        }
+
+        blockMarker.done(BLOCK);
+        marker.done(BLOCK_CODE_FRAGMENT);
     }
 
     void parseScript() {
