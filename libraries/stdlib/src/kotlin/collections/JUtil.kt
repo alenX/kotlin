@@ -2,8 +2,20 @@ package kotlin
 
 import java.util.*
 
+object emptyList : List<Any> by ArrayList<Any>() {
+    override fun toString(): String = "[]"
+
+    override fun equals(other: Any?): Boolean =
+            when (other) {
+                is List<*> -> other.size() == 0
+                else -> false
+            }
+}
+
+public fun emptyList<T>() : List<T> = emptyList as List<T>
+
 /** Returns a new read-only list of given elements */
-public fun listOf<T>(vararg values: T): List<T> = arrayListOf(*values)
+public fun listOf<T>(vararg values: T): List<T> = if (values.size == 0) emptyList() else arrayListOf(*values)
 
 /** Returns a new read-only map of given pairs, where the first value is the key, and the second is value */
 public fun mapOf<K, V>(vararg values: Pair<K, V>): Map<K, V> = hashMapOf(*values)
