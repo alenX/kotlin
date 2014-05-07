@@ -8,6 +8,230 @@ package kotlin
 import java.util.*
 
 /**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Iterable<Int>.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Iterable<Long>.average(): Long? {
+    val iterator = iterator()
+    var sum: Long = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Iterable<Double>.average(): Double? {
+    val iterator = iterator()
+    var sum: Double = 0.0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Iterable<Float>.average(): Float? {
+    val iterator = iterator()
+    var sum: Float = 0.0f
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Int>.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun IntArray.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Long>.average(): Long? {
+    val iterator = iterator()
+    var sum: Long = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun LongArray.average(): Long? {
+    val iterator = iterator()
+    var sum: Long = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Byte>.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun ByteArray.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Short>.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun ShortArray.average(): Int? {
+    val iterator = iterator()
+    var sum: Int = 0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Double>.average(): Double? {
+    val iterator = iterator()
+    var sum: Double = 0.0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun DoubleArray.average(): Double? {
+    val iterator = iterator()
+    var sum: Double = 0.0
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun Array<out Float>.average(): Float? {
+    val iterator = iterator()
+    var sum: Float = 0.0f
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
+ * Returns the average of all elements in the collection, or null if there are no elements
+ */
+public fun FloatArray.average(): Float? {
+    val iterator = iterator()
+    var sum: Float = 0.0f
+    var count = 0
+    while (iterator.hasNext()) {
+        count++
+        sum += iterator.next()
+    }
+    return if (count == 0) return null else sum/count
+}
+
+/**
  * Returns the sum of all elements in the collection
  */
 public fun Iterable<Int>.sum(): Int {

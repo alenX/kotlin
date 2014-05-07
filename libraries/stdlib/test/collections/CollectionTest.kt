@@ -406,6 +406,14 @@ class CollectionTest {
         expect(3.0.toFloat()) { arrayListOf<Float>(1.0.toFloat(), 2.0.toFloat()).sum() }
     }
 
+    test fun average() {
+        expect(null) { arrayListOf<Int>().average() }
+        expect(4) { arrayListOf(2, 3, 9).average() }
+        expect(1.5) { arrayListOf(1.0, 2.0).average() }
+        expect(1500000000000) { arrayListOf<Long>(1000000000000, 2000000000000).average() }
+        expect(1.5.toFloat()) { arrayListOf<Float>(1.0.toFloat(), 2.0.toFloat()).average() }
+    }
+
     test fun takeReturnsFirstNElements() {
         expect(listOf(1, 2, 3, 4, 5)) { (1..10) take 5 }
         expect(listOf(1, 2, 3, 4, 5)) { (1..10).toList().take(5) }
