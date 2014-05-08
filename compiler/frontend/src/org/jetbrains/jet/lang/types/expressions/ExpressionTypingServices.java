@@ -355,7 +355,7 @@ public class ExpressionTypingServices {
             @Nullable JetExpression expression,
             @NotNull final ExpressionTypingContext context
     ) {
-        return JetPsiUtil.deparenthesizeWithResolutionStrategy(expression, true, new Function<JetTypeReference, Void>() {
+        return JetPsiUtil.deparenthesizeWithResolutionStrategy(expression, new Function<JetTypeReference, Void>() {
             @Override
             public Void apply(JetTypeReference reference) {
                 getTypeResolver().resolveType(context.scope, reference, context.trace, true);

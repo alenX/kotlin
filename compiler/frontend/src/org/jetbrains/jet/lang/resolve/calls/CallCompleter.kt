@@ -58,6 +58,8 @@ import org.jetbrains.jet.lang.resolve.calls.CallResolverUtil.ResolveArgumentsMod
 import org.jetbrains.jet.lang.resolve.calls.context.ContextDependency.INDEPENDENT
 import org.jetbrains.jet.lang.resolve.TemporaryBindingTrace
 import org.jetbrains.jet.lang.resolve.calls.util.getAllValueArguments
+import org.jetbrains.jet.lang.psi.JetQualifiedExpression
+import java.util.ArrayList
 
 public class CallCompleter {
     private var argumentTypeResolver_: ArgumentTypeResolver by Delegates.notNull()
@@ -254,7 +256,7 @@ public class CallCompleter {
             updatedType = ArgumentTypeResolver.updateResultArgumentTypeIfNotDenotable(context as ResolutionContext<*>, expression)
         }
 
-        BindingContextUtils.updateRecordedType(updatedType, expression, context.trace, hasNecessarySafeCall(expression, context.trace))
+        updateRecordedTypeForArgument(updatedType, expression, context.trace)
 
         if (ArgumentTypeResolver.isFunctionLiteralArgument(expression)) {
             argumentTypeResolver_.getFunctionLiteralTypeInfo(
@@ -293,6 +295,27 @@ public class CallCompleter {
             return getCallForArgument(lastStatement as? JetExpression, bindingContext)
         }
         return getCorrespondingCall(argument, bindingContext)
+    }
+
+    private fun updateRecordedTypeForArgument(updatedType: JetType?, argumentExpression: JetExpression, trace: BindingTrace) {
+        fun deparenthesizeOrGetSelector(expression: JetExpression?): JetExpression? {
+            val deparenthesized = JetPsiUtil.deparenthesizeOnce(expression, /* deparenthesizeBinaryExpressionWithTypeRHS = */ false)
+            if (deparenthesized != expression) return deparenthesized
+
+            if (expression is JetQualifiedExpression) return expression.getSelectorExpression()
+            return null
+        }
+
+        val expressions = ArrayList<JetExpression>()
+        var expression: JetExpression? = argumentExpression
+        while (expression != null) {
+            expressions.add(expression!!)
+            expression = deparenthesizeOrGetSelector(expression)
+        }
+        expressions.forEach { expression ->
+            BindingContextUtils.updateRecordedType(
+                    updatedType, expression, trace, /* shouldBeMadeNullable = */ hasNecessarySafeCall(expression, trace))
+        }
     }
 
     private fun hasNecessarySafeCall(expression: JetExpression, trace: BindingTrace): Boolean {
