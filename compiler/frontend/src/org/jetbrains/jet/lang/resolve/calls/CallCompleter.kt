@@ -18,7 +18,6 @@ package org.jetbrains.jet.lang.resolve.calls
 
 import javax.inject.Inject
 import kotlin.properties.Delegates
-import java.util.ArrayList
 import org.jetbrains.jet.lang.descriptors.CallableDescriptor
 import org.jetbrains.jet.lang.resolve.calls.context.BasicCallResolutionContext
 import org.jetbrains.jet.lang.resolve.calls.results.OverloadResolutionResultsImpl
@@ -41,7 +40,6 @@ import org.jetbrains.jet.lang.psi.ValueArgument
 import org.jetbrains.jet.lang.resolve.calls.model.ArgumentMapping
 import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo
 import org.jetbrains.jet.lang.resolve.calls.model.ArgumentUnmapped
-import org.jetbrains.jet.lang.resolve.calls.util.CallMaker
 import org.jetbrains.jet.lang.resolve.calls.model.ArgumentMatch
 import org.jetbrains.jet.lang.psi.JetWhenExpression
 import org.jetbrains.jet.lang.resolve.BindingContext
@@ -82,14 +80,14 @@ public class CallCompleter {
     ): OverloadResolutionResultsImpl<D> {
         if (CallResolverUtil.isInvokeCallOnVariable(context.call)) return results
 
-        if (results.isSingleResult()) {
-            completeResolvedCall(results.getResultingCall(), context, tracing)
-        }
-        if (context.checkArguments == CheckValueArgumentsMode.ENABLED) {
-            completeArguments(context, results)
-        }
+        val resolvedCall = if (results.isSingleResult()) results.getResultingCall() else null
+        val temporaryTrace = TemporaryBindingTrace.create(context.trace, "Trace to complete a resulting call")
+
+        completeResolvedCallAndArguments(resolvedCall, results, context.replaceBindingTrace(temporaryTrace), tracing)
 
         completeAllCandidates(context, results, innerCall)
+
+        temporaryTrace.commit()
         if (results.isSingleResult() && results.getResultingCall().getStatus().isSuccess()) {
             return results.changeStatusToSuccess()
         }
@@ -116,27 +114,31 @@ public class CallCompleter {
             if (resolvedCall.isCompleted()) continue
 
             val temporaryBindingTrace = TemporaryBindingTrace.create(context.trace, "Trace to complete a candidate that is not a resulting call")
-            completeResolvedCall(resolvedCall, context.replaceBindingTrace(temporaryBindingTrace), TracingStrategy.EMPTY)
+            completeResolvedCallAndArguments(resolvedCall, results, context.replaceBindingTrace(temporaryBindingTrace), TracingStrategy.EMPTY)
         }
     }
 
-    private fun <D : CallableDescriptor> completeResolvedCall(
-            resolvedCall: MutableResolvedCall<D>,
+    private fun <D : CallableDescriptor> completeResolvedCallAndArguments(
+            resolvedCall: MutableResolvedCall<D>?,
+            results: OverloadResolutionResultsImpl<D>,
             context: BasicCallResolutionContext,
             tracing: TracingStrategy
     ) {
-        if (resolvedCall.isCompleted()) return
+        resolvedCall?.completeConstraintSystem(context.expectedType, context.trace)
 
-        resolvedCall.completeConstraintSystem(context.expectedType, context.trace)
-        resolvedCall.updateResolutionStatus(context, tracing)
-        resolvedCall.markCallAsCompleted()
+        if (context.checkArguments == CheckValueArgumentsMode.ENABLED) {
+            completeArguments(context, results)
+        }
+
+        resolvedCall?.updateResolutionStatus(context, tracing)
+        resolvedCall?.markCallAsCompleted()
     }
 
     private fun <D : CallableDescriptor> MutableResolvedCall<D>.completeConstraintSystem(
             expectedType: JetType,
             trace: BindingTrace
     ) {
-        if (getConstraintSystem() == null) return
+        if (isCompleted() || getConstraintSystem() == null) return
 
         fun updateSystemIfSuccessful(update: (ConstraintSystem) -> Boolean) {
             val copy = getConstraintSystem()!!.copy()
@@ -175,7 +177,7 @@ public class CallCompleter {
             context: BasicCallResolutionContext,
             tracing: TracingStrategy
     ) {
-        if (getConstraintSystem() == null) return
+        if (isCompleted() || getConstraintSystem() == null) return
 
         val contextWithResolvedCall = CallCandidateResolutionContext.createForCallBeingAnalyzed(this, context, tracing)
         val valueArgumentsCheckingResult = candidateResolver_.checkAllValueArguments(
