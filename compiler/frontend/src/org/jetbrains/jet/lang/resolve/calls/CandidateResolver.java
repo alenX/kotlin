@@ -481,7 +481,7 @@ public class CandidateResolver {
                     }
                 }
                 argumentTypes.add(resultingType);
-                candidateCall.recordArgumentMatch(argument, parameterDescriptor, matchStatus);
+                candidateCall.recordArgumentMatchStatus(argument, matchStatus);
             }
         }
         return new ValueArgumentsCheckingResult(resultStatus, argumentTypes);

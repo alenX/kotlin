@@ -27,7 +27,6 @@ import org.jetbrains.jet.lang.psi.Call;
 import org.jetbrains.jet.lang.psi.ValueArgument;
 import org.jetbrains.jet.lang.resolve.DelegatingBindingTrace;
 import org.jetbrains.jet.lang.resolve.calls.CallResolverUtil;
-import org.jetbrains.jet.lang.resolve.calls.autocasts.DataFlowInfo;
 import org.jetbrains.jet.lang.resolve.calls.inference.ConstraintSystem;
 import org.jetbrains.jet.lang.resolve.calls.results.ResolutionStatus;
 import org.jetbrains.jet.lang.resolve.calls.tasks.ExplicitReceiverKind;
@@ -80,7 +79,9 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements MutableRe
     private final Map<TypeParameterDescriptor, JetType> typeArguments = Maps.newLinkedHashMap();
     private final Map<ValueParameterDescriptor, ResolvedValueArgument> valueArguments = Maps.newLinkedHashMap();
     private final MutableDataFlowInfoForArguments dataFlowInfoForArguments;
-    private final Map<ValueArgument, ArgumentMatch> argumentToParameterMap = Maps.newHashMap();
+
+    private Map<ValueArgument, ValueParameterDescriptor> argumentToParameterMap = Maps.newHashMap();
+    private final Map<ValueArgument, ArgumentMatch> argumentMatchMap = Maps.newHashMap();
 
     private DelegatingBindingTrace trace;
     private TracingStrategy tracing;
@@ -166,26 +167,26 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements MutableRe
             }
         }
 
-        Map<ValueParameterDescriptor, ValueParameterDescriptor> parameterMap = Maps.newHashMap();
+        Map<ValueParameterDescriptor, ValueParameterDescriptor> substitutedParametersMap = Maps.newHashMap();
         for (ValueParameterDescriptor valueParameterDescriptor : resultingDescriptor.getValueParameters()) {
-            parameterMap.put(valueParameterDescriptor.getOriginal(), valueParameterDescriptor);
+            substitutedParametersMap.put(valueParameterDescriptor.getOriginal(), valueParameterDescriptor);
         }
 
         Map<ValueParameterDescriptor, ResolvedValueArgument> originalValueArguments = Maps.newLinkedHashMap(valueArguments);
         valueArguments.clear();
         for (Map.Entry<ValueParameterDescriptor, ResolvedValueArgument> entry : originalValueArguments.entrySet()) {
-            ValueParameterDescriptor substitutedVersion = parameterMap.get(entry.getKey().getOriginal());
+            ValueParameterDescriptor substitutedVersion = substitutedParametersMap.get(entry.getKey().getOriginal());
             assert substitutedVersion != null : entry.getKey();
             valueArguments.put(substitutedVersion, entry.getValue());
         }
 
-        Map<ValueArgument, ArgumentMatch> originalArgumentToParameterMap = Maps.newLinkedHashMap(argumentToParameterMap);
+        Map<ValueArgument, ValueParameterDescriptor> originalArgumentToParameterMap = Maps.newLinkedHashMap(argumentToParameterMap);
         argumentToParameterMap.clear();
-        for (Map.Entry<ValueArgument, ArgumentMatch> entry : originalArgumentToParameterMap.entrySet()) {
-            ArgumentMatch argumentMatch = entry.getValue();
-            ValueParameterDescriptor substitutedVersion = parameterMap.get(argumentMatch.getValueParameter().getOriginal());
-            assert substitutedVersion != null : argumentMatch.getValueParameter();
-            argumentToParameterMap.put(entry.getKey(), new ArgumentMatch(substitutedVersion, argumentMatch.getStatus()));
+        for (Map.Entry<ValueArgument, ValueParameterDescriptor> entry : originalArgumentToParameterMap.entrySet()) {
+            ValueParameterDescriptor valueParameterDescriptor = entry.getValue();
+            ValueParameterDescriptor substitutedVersion = substitutedParametersMap.get(valueParameterDescriptor.getOriginal());
+            assert substitutedVersion != null : valueParameterDescriptor;
+            argumentToParameterMap.put(entry.getKey(), substitutedVersion);
         }
     }
 
@@ -205,6 +206,9 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements MutableRe
     public void recordValueArgument(@NotNull ValueParameterDescriptor valueParameter, @NotNull ResolvedValueArgument valueArgument) {
         assert !valueArguments.containsKey(valueParameter) : valueParameter + " -> " + valueArgument;
         valueArguments.put(valueParameter, valueArgument);
+        for (ValueArgument argument : valueArgument.getArguments()) {
+            argumentToParameterMap.put(argument, valueParameter);
+        }
     }
 
     @Override
@@ -259,17 +263,21 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements MutableRe
     }
 
     @Override
-    public void recordArgumentMatch(
-            @NotNull ValueArgument valueArgument, @NotNull ValueParameterDescriptor parameter, @NotNull ArgumentMatchStatus matchStatus
-    ) {
-        argumentToParameterMap.put(valueArgument, new ArgumentMatch(parameter, matchStatus));
+    public void recordArgumentMatchStatus(@NotNull ValueArgument valueArgument, @NotNull ArgumentMatchStatus matchStatus) {
+        argumentMatchMap.put(valueArgument, new ArgumentMatch(argumentToParameterMap.get(valueArgument), matchStatus));
     }
 
     @NotNull
     @Override
     public ArgumentMapping getArgumentMapping(@NotNull ValueArgument valueArgument) {
-        ArgumentMatch argumentMatch = argumentToParameterMap.get(valueArgument);
+        ArgumentMatch argumentMatch = argumentMatchMap.get(valueArgument);
         if (argumentMatch == null) {
+            if (!isCompleted()) {
+                ValueParameterDescriptor valueParameterDescriptor = argumentToParameterMap.get(valueArgument);
+                if (valueParameterDescriptor != null) {
+                    return new ArgumentMatch(valueParameterDescriptor, ArgumentMatchStatus.SUCCESS);
+                }
+            }
             return ArgumentUnmapped.instance$;
         }
         return argumentMatch;
@@ -310,6 +318,7 @@ public class ResolvedCallImpl<D extends CallableDescriptor> implements MutableRe
         constraintSystem = null;
         tracing = null;
         completed = true;
+        argumentToParameterMap = null;
     }
 
     @Override
