@@ -297,10 +297,6 @@ public abstract class KotlinCompileMojoBase extends AbstractMojo {
 
         classpathList.addAll(classpath);
 
-        if (classpathList.remove(output)) {
-            log.debug("Removed target directory from compiler classpath (" + output + ")");
-        }
-
         if (classpathList.size() > 0) {
             String classPathString = join(classpathList, File.pathSeparator);
             log.info("Classpath: " + classPathString);
