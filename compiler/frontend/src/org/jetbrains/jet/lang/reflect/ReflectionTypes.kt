@@ -27,10 +27,30 @@ import org.jetbrains.jet.lang.types.JetType
 import org.jetbrains.jet.lang.types.JetTypeImpl
 
 public class ReflectionTypes(private val module: ModuleDescriptor) {
-    // TODO: use module instead of built-ins
-    public fun getKFunction(n: Int): ClassDescriptor = KotlinBuiltIns.getInstance().getKFunction(n)
-    public fun getKExtensionFunction(n: Int): ClassDescriptor = KotlinBuiltIns.getInstance().getKExtensionFunction(n)
-    public fun getKMemberFunction(n: Int): ClassDescriptor = KotlinBuiltIns.getInstance().getKMemberFunction(n)
+    private val kotlinReflect: JetScope by Delegates.lazy {
+        // TODO: handle errors gracefully (error types)
+        val kotlin = module.getPackage(FqName("kotlin")) ?: error("Package kotlin not found in $module")
+        // TODO: move K*FunctionN under kotlin.reflect.*
+        // val reflect = kotlin.getMemberScope().getPackage(Name.identifier("reflect")) ?: error("Package reflect not found in $kotlin")
+        kotlin.getMemberScope()
+    }
+
+    private val classLookup = ClassLookup()
+
+    private inner class ClassLookup {
+        fun get(suppress("UNUSED_PARAMETER") o: Any?, property: PropertyMetadata): ClassDescriptor {
+            return invoke(property.name.capitalize())
+        }
+
+        fun invoke(className: String): ClassDescriptor {
+            val name = Name.identifier(className)
+            return kotlinReflect.getClassifier(name) as? ClassDescriptor ?: error("Reflection class not found: $name")
+        }
+    }
+
+    public fun getKFunction(n: Int): ClassDescriptor = classLookup("KFunction$n")
+    public fun getKExtensionFunction(n: Int): ClassDescriptor = classLookup("KExtensionFunction$n")
+    public fun getKMemberFunction(n: Int): ClassDescriptor = classLookup("KMemberFunction$n")
 
     public fun getKFunctionType(
             annotations: Annotations,
