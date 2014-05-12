@@ -29,7 +29,10 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.asJava.KotlinLightClassForExplicitDeclaration;
 import org.jetbrains.jet.asJava.LightClassConstructionContext;
 import org.jetbrains.jet.asJava.LightClassGenerationSupport;
-import org.jetbrains.jet.lang.descriptors.*;
+import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
+import org.jetbrains.jet.lang.descriptors.PackageViewDescriptor;
+import org.jetbrains.jet.lang.descriptors.VariableDescriptor;
 import org.jetbrains.jet.lang.psi.*;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.java.PackageClassUtils;
@@ -37,6 +40,7 @@ import org.jetbrains.jet.lang.resolve.lazy.ForceResolveUtil;
 import org.jetbrains.jet.lang.resolve.lazy.KotlinCodeAnalyzer;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
+import org.jetbrains.jet.lang.types.ErrorUtils;
 import org.jetbrains.jet.plugin.libraries.JetSourceNavigationHelper;
 import org.jetbrains.jet.plugin.project.ResolveSessionForBodies;
 import org.jetbrains.jet.plugin.stubindex.JetAllPackagesIndex;
@@ -80,7 +84,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
     @Override
     public LightClassConstructionContext getContextForPackage(@NotNull Collection<JetFile> files) {
         if (files.isEmpty()) {
-            return new LightClassConstructionContext(BindingContext.EMPTY, null);
+            return new LightClassConstructionContext(BindingContext.EMPTY, ErrorUtils.getErrorModule());
         }
 
         List<JetFile> sortedFiles = new ArrayList<JetFile>(files);
@@ -88,7 +92,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
 
         ResolveSessionForBodies session = ResolvePackage.getLazyResolveSession(sortedFiles.get(0));
         forceResolvePackageDeclarations(files, session);
-        return new LightClassConstructionContext(session.getBindingContext(), null);
+        return new LightClassConstructionContext(session.getBindingContext(), session.getModuleDescriptor());
     }
 
     @NotNull
@@ -102,16 +106,16 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
 
             if (descriptor == null) {
                 LOG.warn("No class descriptor in context for class: " + JetPsiUtil.getElementTextWithContext(classOrObject));
-                return new LightClassConstructionContext(BindingContext.EMPTY, null);
+                return new LightClassConstructionContext(BindingContext.EMPTY, session.getModuleDescriptor());
             }
 
             ForceResolveUtil.forceResolveAllContents(descriptor);
 
-            return new LightClassConstructionContext(bindingContext, null);
+            return new LightClassConstructionContext(bindingContext, session.getModuleDescriptor());
         }
 
         ForceResolveUtil.forceResolveAllContents(session.getClassDescriptor(classOrObject));
-        return new LightClassConstructionContext(session.getBindingContext(), null);
+        return new LightClassConstructionContext(session.getBindingContext(), session.getModuleDescriptor());
     }
 
     private static void forceResolvePackageDeclarations(@NotNull Collection<JetFile> files, @NotNull KotlinCodeAnalyzer session) {
@@ -164,7 +168,7 @@ public class IDELightClassGenerationSupport extends LightClassGenerationSupport 
 
     @NotNull
     @Override
-    public Collection<JetFile> findFilesForPackage(@NotNull final FqName fqName, @NotNull GlobalSearchScope searchScope) {
+    public Collection<JetFile> findFilesForPackage(@NotNull FqName fqName, @NotNull GlobalSearchScope searchScope) {
         return PackageIndexUtil.findFilesWithExactPackage(fqName, kotlinSources(searchScope), project);
     }
 

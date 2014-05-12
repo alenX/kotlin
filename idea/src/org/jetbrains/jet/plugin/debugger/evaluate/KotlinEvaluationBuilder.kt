@@ -185,6 +185,7 @@ class KotlinEvaluator(val codeFragment: JetExpressionCodeFragment,
                 val state = GenerationState(
                         file.getProject(),
                         ClassBuilderFactories.BINARIES,
+                        analyzeExhaust.getModuleDescriptor(),
                         bindingContext,
                         listOf(file)
                 )
