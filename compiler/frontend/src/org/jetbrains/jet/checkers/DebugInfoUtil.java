@@ -135,6 +135,10 @@ public class DebugInfoUtil {
                     // if 'foo' in 'foo[i]' is unresolved it means 'foo[i]' is unresolved (otherwise 'foo[i]' is marked as 'missing unresolved')
                     markedWithError = true;
                 }
+                if (expression instanceof JetSimpleNameExpression && ((JetSimpleNameExpression) expression).getReferencedNameElementType() == JetTokens.AT) {
+                    // errors 'label must be named' for return@, this@ are reported in parser
+                    markedWithError = true;
+                }
                 JetType expressionType = bindingContext.get(EXPRESSION_TYPE, expression);
                 DiagnosticFactory factory = markedWithErrorElements.get(expression);
                 if (declarationDescriptor != null &&

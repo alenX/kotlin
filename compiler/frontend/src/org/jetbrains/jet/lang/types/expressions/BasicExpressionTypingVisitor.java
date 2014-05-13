@@ -377,7 +377,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
         String labelName = expression.getLabelName();
         if (labelName != null) {
             LabelResolver.LabeledReceiverResolutionResult resolutionResult =
-                    LabelResolver.resolveThisOrSuperLabel(expression, context, Name.identifierForLabel(labelName));
+                    LabelResolver.resolveThisOrSuperLabel(expression, context, Name.identifier(labelName));
             if (onlyClassReceivers && resolutionResult.success()) {
                 if (!isDeclaredInClass(resolutionResult.getReceiverParameterDescriptor())) {
                     return LabelResolver.LabeledReceiverResolutionResult.labelResolutionSuccess(NO_RECEIVER_PARAMETER);
@@ -612,7 +612,7 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
 
         IElementType operationType = operationSign.getReferencedNameElementType();
         // If it's a labeled expression
-        if (JetTokens.LABELS.contains(operationType)) {
+        if (JetPsiUtil.isLabeledExpression(expression)) {
             return visitLabeledExpression(expression, context, isStatement);
         }
 
@@ -738,11 +738,9 @@ public class BasicExpressionTypingVisitor extends ExpressionTypingVisitor {
 
     private JetTypeInfo visitLabeledExpression(@NotNull JetUnaryExpression expression, @NotNull ExpressionTypingContext context,
             boolean isStatement) {
+        assert JetPsiUtil.isLabeledExpression(expression);
         JetExpression baseExpression = expression.getBaseExpression();
         assert baseExpression != null;
-        JetSimpleNameExpression operationSign = expression.getOperationReference();
-        assert JetTokens.LABELS.contains(operationSign.getReferencedNameElementType());
-
         return facade.getTypeInfo(baseExpression, context, isStatement);
     }
 

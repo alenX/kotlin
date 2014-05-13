@@ -489,6 +489,7 @@ public class JetExpressionParsing extends AbstractJetParsing {
 
     private void parseOperationReference() {
         PsiBuilder.Marker operationReference = mark();
+        checkNamedLabel();
         advance(); // operation
         operationReference.done(OPERATION_REFERENCE);
     }
@@ -1584,12 +1585,19 @@ public class JetExpressionParsing extends AbstractJetParsing {
     private void parseLabel() {
         if (!eol() && atSet(LABELS)) {
             PsiBuilder.Marker labelWrap = mark();
+            checkNamedLabel();
 
             PsiBuilder.Marker mark = mark();
             advance(); // LABELS
             mark.done(LABEL_REFERENCE);
 
             labelWrap.done(LABEL_QUALIFIER);
+        }
+    }
+
+    private void checkNamedLabel() {
+        if (at(AT)) {
+            error("Label must be named");
         }
     }
 

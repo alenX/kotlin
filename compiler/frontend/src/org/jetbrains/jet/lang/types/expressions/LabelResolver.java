@@ -58,7 +58,10 @@ public class LabelResolver {
         if (element instanceof JetPrefixExpression) {
             JetPrefixExpression prefixExpression = (JetPrefixExpression) element;
             if (JetPsiUtil.isLabeledExpression(prefixExpression)) {
-                return Name.identifierForLabel(JetPsiUtil.getLabelName(prefixExpression));
+                String labelName = JetPsiUtil.getLabelName(prefixExpression);
+                if (labelName != null) {
+                    return Name.identifier(labelName);
+                }
             }
         }
         else if (element instanceof JetFunctionLiteralExpression) {
@@ -120,7 +123,7 @@ public class LabelResolver {
         String name = expression.getLabelName();
         if (labelElement == null || name == null) return null;
 
-        Name labelName = Name.identifierForLabel(name);
+        Name labelName = Name.identifier(name);
         Collection<DeclarationDescriptor> declarationsByLabel = context.scope.getDeclarationsByLabel(labelName);
         int size = declarationsByLabel.size();
 

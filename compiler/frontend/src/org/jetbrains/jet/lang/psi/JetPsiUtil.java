@@ -131,19 +131,20 @@ public class JetPsiUtil {
         return null;
     }
 
-    public static boolean isLabeledExpression(JetPrefixExpression expression) {
+    public static boolean isLabeledExpression(@NotNull JetUnaryExpression expression) {
         return JetTokens.LABELS.contains(expression.getOperationReference().getReferencedNameElementType());
     }
 
-    @NotNull
-    public static String getLabelName(@NotNull JetPrefixExpression expression) {
+    @Nullable
+    public static String getLabelName(@NotNull JetUnaryExpression expression) {
         assert isLabeledExpression(expression);
         return truncateLabelName(expression.getOperationReference().getReferencedName());
     }
 
-    @NotNull
+    @Nullable
     public static String truncateLabelName(@NotNull String name) {
         assert name.startsWith("@") : "Incorrect label name " + name;
+        if (name.equals("@")) return null;
         return name.substring(1);
     }
 
