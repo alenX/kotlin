@@ -38,14 +38,7 @@ import static org.jetbrains.jet.lang.resolve.BindingContext.REFERENCE_TARGET;
 public class LabelResolver {
 
     @NotNull
-    public static LabelResolver create() {
-        return new LabelResolver();
-    }
-
-    private LabelResolver() {}
-
-    @NotNull
-    private List<JetElement> getElementsByLabelName(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression) {
+    private static List<JetElement> getElementsByLabelName(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression) {
         List<JetElement> elements = Lists.newArrayList();
         PsiElement parent = labelExpression.getParent();
         while (parent != null) {
@@ -59,7 +52,7 @@ public class LabelResolver {
     }
 
     @Nullable
-    private Name getLabelNameIfAny(@NotNull PsiElement element) {
+    private static Name getLabelNameIfAny(@NotNull PsiElement element) {
         if (element instanceof JetPrefixExpression) {
             JetPrefixExpression prefixExpression = (JetPrefixExpression) element;
             if (JetPsiUtil.isLabeledExpression(prefixExpression)) {
@@ -73,7 +66,7 @@ public class LabelResolver {
     }
 
     @NotNull
-    private JetExpression getExpressionUnderLabel(@NotNull JetExpression labeledExpression) {
+    private static JetExpression getExpressionUnderLabel(@NotNull JetExpression labeledExpression) {
         JetExpression expression = JetPsiUtil.safeDeparenthesize(labeledExpression, true);
         if (expression instanceof JetFunctionLiteralExpression) {
             return ((JetFunctionLiteralExpression) expression).getFunctionLiteral();
@@ -82,7 +75,7 @@ public class LabelResolver {
     }
 
     @Nullable
-    private Name getCallerName(@NotNull JetFunctionLiteralExpression expression) {
+    private static Name getCallerName(@NotNull JetFunctionLiteralExpression expression) {
         JetCallExpression callExpression = getContainingCallExpression(expression);
         if (callExpression == null) return null;
 
@@ -96,7 +89,7 @@ public class LabelResolver {
     }
 
     @Nullable
-    private JetCallExpression getContainingCallExpression(JetFunctionLiteralExpression expression) {
+    private static JetCallExpression getContainingCallExpression(JetFunctionLiteralExpression expression) {
         PsiElement parent = expression.getParent();
         if (parent instanceof JetCallExpression) {
             // f {}
@@ -117,7 +110,7 @@ public class LabelResolver {
     }
 
     @Nullable
-    private JetElement resolveControlLabel(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression, boolean reportUnresolved, ExpressionTypingContext context) {
+    private static JetElement resolveControlLabel(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression, boolean reportUnresolved, ExpressionTypingContext context) {
         Collection<DeclarationDescriptor> declarationsByLabel = context.scope.getDeclarationsByLabel(labelName);
         int size = declarationsByLabel.size();
 
@@ -141,7 +134,7 @@ public class LabelResolver {
     }
 
     @Nullable
-    public JetElement resolveLabel(JetLabelQualifiedExpression expression, ExpressionTypingContext context) {
+    public static JetElement resolveLabel(JetLabelQualifiedExpression expression, ExpressionTypingContext context) {
         JetSimpleNameExpression labelElement = expression.getTargetLabel();
         if (labelElement != null) {
             Name labelName = Name.identifierForLabel(expression.getLabelName());
@@ -150,7 +143,7 @@ public class LabelResolver {
         return null;
     }
 
-    private JetElement resolveNamedLabel(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression, boolean reportUnresolved, ExpressionTypingContext context) {
+    private static JetElement resolveNamedLabel(@NotNull Name labelName, @NotNull JetSimpleNameExpression labelExpression, boolean reportUnresolved, ExpressionTypingContext context) {
         List<JetElement> list = getElementsByLabelName(labelName, labelExpression);
         if (list.isEmpty()) {
             if (reportUnresolved) {
@@ -167,7 +160,7 @@ public class LabelResolver {
         return result;
     }
 
-    public LabeledReceiverResolutionResult resolveThisLabel(JetReferenceExpression thisReference, JetSimpleNameExpression targetLabel,
+    public static LabeledReceiverResolutionResult resolveThisLabel(JetReferenceExpression thisReference, JetSimpleNameExpression targetLabel,
             ExpressionTypingContext context, Name labelName) {
         Collection<DeclarationDescriptor> declarationsByLabel = context.scope.getDeclarationsByLabel(labelName);
         int size = declarationsByLabel.size();
