@@ -5142,6 +5142,16 @@ public class BlackBoxCodegenTestGenerated extends AbstractBlackBoxCodegenTest {
             doTest("compiler/testData/codegen/box/super/kt4173_3.kt");
         }
         
+        @TestMetadata("kt4174.kt")
+        public void testKt4174() throws Exception {
+            doTest("compiler/testData/codegen/box/super/kt4174.kt");
+        }
+        
+        @TestMetadata("kt4982.kt")
+        public void testKt4982() throws Exception {
+            doTest("compiler/testData/codegen/box/super/kt4982.kt");
+        }
+        
         @TestMetadata("multipleSuperTraits.kt")
         public void testMultipleSuperTraits() throws Exception {
             doTest("compiler/testData/codegen/box/super/multipleSuperTraits.kt");
