@@ -42,7 +42,7 @@ public class JetLabelQualifiedExpression extends JetExpressionImpl {
     @Nullable
     public String getLabelName() {
         JetSimpleNameExpression labelElement = getTargetLabel();
-        assert labelElement == null || labelElement.getText().startsWith("@");
-        return labelElement == null ? null : labelElement.getText().substring(1);
+        if (labelElement == null) return null;
+        return JetPsiUtil.truncateLabelName(labelElement.getText());
     }
 }

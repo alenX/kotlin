@@ -39,7 +39,6 @@ import org.jetbrains.jet.lang.parsing.JetExpressionParsing;
 import org.jetbrains.jet.lang.psi.psiUtil.PsiUtilPackage;
 import org.jetbrains.jet.lang.resolve.ImportPath;
 import org.jetbrains.jet.lang.resolve.name.FqName;
-import org.jetbrains.jet.lang.resolve.name.FqNameUnsafe;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.resolve.name.SpecialNames;
 import org.jetbrains.jet.lang.types.expressions.OperatorConventions;
@@ -139,9 +138,13 @@ public class JetPsiUtil {
     @NotNull
     public static String getLabelName(@NotNull JetPrefixExpression expression) {
         assert isLabeledExpression(expression);
-        String labelName = expression.getOperationReference().getReferencedName();
-        assert labelName.startsWith("@") : "Incorrect label name " + expression.getText();
-        return labelName.substring(1);
+        return truncateLabelName(expression.getOperationReference().getReferencedName());
+    }
+
+    @NotNull
+    public static String truncateLabelName(@NotNull String name) {
+        assert name.startsWith("@") : "Incorrect label name " + name;
+        return name.substring(1);
     }
 
     @NotNull
