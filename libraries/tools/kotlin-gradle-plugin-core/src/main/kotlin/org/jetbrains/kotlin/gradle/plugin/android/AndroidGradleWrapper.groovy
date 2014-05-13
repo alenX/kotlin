@@ -4,10 +4,10 @@ import com.android.build.gradle.BasePlugin
 
 class AndroidGradleWrapper {
     static def getRuntimeJars(BasePlugin basePlugin) {
-        try {
+        if (basePlugin.getMetaClass().getMetaMethod("getRuntimeJarList")) {
             return basePlugin.getRuntimeJarList()
         }
-        catch (Exception e) {
+        else {
             return basePlugin.getBootClasspath()
         }
     }
