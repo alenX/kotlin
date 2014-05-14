@@ -16,9 +16,12 @@
 
 package org.jetbrains.jet.lang.resolve.kotlin;
 
+import com.intellij.ide.highlighter.JavaClassFileType;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.resolve.java.structure.JavaClass;
+import org.jetbrains.jet.lang.resolve.java.structure.impl.JavaClassImpl;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 
 public abstract class VirtualFileKotlinClassFinder implements VirtualFileFinder {
@@ -27,5 +30,16 @@ public abstract class VirtualFileKotlinClassFinder implements VirtualFileFinder 
     public KotlinJvmBinaryClass findKotlinClass(@NotNull FqName fqName) {
         VirtualFile file = findVirtualFileWithHeader(fqName);
         return file == null ? null : KotlinBinaryClassCache.getKotlinBinaryClass(file);
+    }
+
+    @Override
+    @Nullable
+    public KotlinJvmBinaryClass findKotlinClassForTopLevelJavaClass(@NotNull JavaClass javaClass) {
+        assert javaClass.getOuterClass() == null : "Only top-level classes are supported. Nested classes' files (e.g. Foo$Bar.class) are harder to find";
+        VirtualFile file = ((JavaClassImpl) javaClass).getPsi().getContainingFile().getVirtualFile();
+
+        if (file.getFileType() != JavaClassFileType.INSTANCE) return null;
+
+        return KotlinBinaryClassCache.getKotlinBinaryClass(file);
     }
 }
