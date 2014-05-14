@@ -54,6 +54,8 @@ import org.jetbrains.jet.lang.psi.JetUserType
 import com.intellij.openapi.diagnostic.Logger
 import org.jetbrains.jet.lang.psi.JetFile
 import org.jetbrains.jet.lang.psi.JetPackageDirective
+import org.jetbrains.jet.lang.psi.JetImportDirective
+import org.jetbrains.jet.lang.psi.JetImportList
 
 // invoke this instead of getText() when you need debug text to identify some place in PSI without storing the element itself
 // this is need to avoid unnecessary file parses
@@ -88,12 +90,25 @@ private object DebugTextBuildingVisitor : JetVisitor<String, Unit>() {
         return element.getText()
     }
 
+    override fun visitImportDirective(importDirective: JetImportDirective, data: Unit?): String? {
+        val importPath = importDirective.getImportPath()
+        if (importPath == null) {
+            return "import <invalid>"
+        }
+        val aliasStr = if (importPath.hasAlias()) " as " + importPath.getAlias()!!.asString() else ""
+        return "import ${importPath.getPathStr()}" + aliasStr
+    }
+
+    override fun visitImportList(importList: JetImportList, data: Unit?): String? {
+        return renderChildren(importList, separator = "\n")
+    }
+
     override fun visitAnnotationEntry(annotationEntry: JetAnnotationEntry, data: Unit?): String? {
         return render(annotationEntry, annotationEntry.getCalleeExpression(), annotationEntry.getTypeArgumentList())
     }
 
     override fun visitTypeReference(typeReference: JetTypeReference, data: Unit?): String? {
-        return renderChildren(typeReference, " ", "", "")
+        return renderChildren(typeReference, " ")
     }
 
     override fun visitTypeArgumentList(typeArgumentList: JetTypeArgumentList, data: Unit?): String? {
@@ -121,7 +136,7 @@ private object DebugTextBuildingVisitor : JetVisitor<String, Unit>() {
     }
 
     override fun visitDelegationSpecifierList(list: JetDelegationSpecifierList, data: Unit?): String? {
-        return renderChildren(list, ", ", "", "")
+        return renderChildren(list, ", ")
     }
 
     override fun visitTypeParameterList(list: JetTypeParameterList, data: Unit?): String? {
@@ -129,11 +144,11 @@ private object DebugTextBuildingVisitor : JetVisitor<String, Unit>() {
     }
 
     override fun visitDotQualifiedExpression(expression: JetDotQualifiedExpression, data: Unit?): String? {
-        return renderChildren(expression, ".", "", "")
+        return renderChildren(expression, ".")
     }
 
     override fun visitInitializerList(list: JetInitializerList, data: Unit?): String? {
-        return renderChildren(list, ", ", "", "")
+        return renderChildren(list, ", ")
     }
 
     override fun visitParameterList(list: JetParameterList, data: Unit?): String? {
@@ -307,7 +322,7 @@ private object DebugTextBuildingVisitor : JetVisitor<String, Unit>() {
         return sb.toString()
     }
 
-    fun renderChildren(element: JetElementImplStub<*>, separator: String, prefix: String, postfix: String): String? {
+    fun renderChildren(element: JetElementImplStub<*>, separator: String, prefix: String = "", postfix: String = ""): String? {
         val childrenTexts = element.getStub()?.getChildrenStubs()?.map { (it?.getPsi() as? JetElement)?.getDebugText() }
         return childrenTexts?.filterNotNull()?.makeString(separator, prefix, postfix) ?: element.getText()
     }
