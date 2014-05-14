@@ -32,13 +32,12 @@ public abstract class JetExpressionImplStub<T extends StubElement> extends JetEl
         super(node);
     }
 
-    //TODO: avoid duplication with JetExpressionImpl
     @Override
     public <R, D> R accept(@NotNull JetVisitor<R, D> visitor, D data) {
         return visitor.visitExpression(this, data);
     }
 
-    //TODO: avoid duplication with JetExpressionImpl
+    //NOTE: duplicate with JetExpressionImpl
     @NotNull
     @Override
     public PsiElement replace(@NotNull PsiElement newElement) throws IncorrectOperationException {

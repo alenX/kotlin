@@ -39,6 +39,7 @@ public abstract class JetExpressionImpl extends JetElementImpl implements JetExp
         return containerNode.findChildByClass(JetExpression.class);
     }
 
+    //NOTE: duplicate with JetExpressionImplStub
     @NotNull
     @Override
     public PsiElement replace(@NotNull PsiElement newElement) throws IncorrectOperationException {
