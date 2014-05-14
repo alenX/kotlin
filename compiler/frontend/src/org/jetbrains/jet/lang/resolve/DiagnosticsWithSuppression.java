@@ -25,9 +25,6 @@ import com.intellij.util.containers.ConcurrentWeakValueHashMap;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.FilteringIterator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
-import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
-import org.jetbrains.jet.lang.descriptors.ValueParameterDescriptor;
 import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.Severity;
@@ -50,9 +47,6 @@ public class DiagnosticsWithSuppression implements Diagnostics {
     // The cache is weak: we're OK with losing it
     private final Map<JetAnnotated, Suppressor> suppressors = new ConcurrentWeakValueHashMap<JetAnnotated, Suppressor>();
 
-    // Caching frequently used values:
-    private final ClassDescriptor suppressClass;
-    private final ValueParameterDescriptor suppressParameter;
     private final Condition<Diagnostic> filter = new Condition<Diagnostic>() {
         @Override
         public boolean value(Diagnostic diagnostic) {
@@ -64,11 +58,6 @@ public class DiagnosticsWithSuppression implements Diagnostics {
     public DiagnosticsWithSuppression(@NotNull BindingContext context, @NotNull Collection<Diagnostic> diagnostics) {
         this.context = context;
         this.diagnostics = diagnostics;
-
-        this.suppressClass = KotlinBuiltIns.getInstance().getSuppressAnnotationClass();
-        ConstructorDescriptor primaryConstructor = suppressClass.getUnsubstitutedPrimaryConstructor();
-        assert primaryConstructor != null : "No primary constructor in " + suppressClass;
-        this.suppressParameter = primaryConstructor.getValueParameters().get(0);
     }
 
     @NotNull
@@ -187,17 +176,13 @@ public class DiagnosticsWithSuppression implements Diagnostics {
                 continue;
             }
 
-            if (!suppressClass.equals(annotationDescriptor.getType().getConstructor().getDeclarationDescriptor())) continue;
+            if (!KotlinBuiltIns.getInstance().isSuppressAnnotation(annotationDescriptor)) continue;
 
-            Map<ValueParameterDescriptor, CompileTimeConstant<?>> arguments = annotationDescriptor.getAllValueArguments();
-            CompileTimeConstant<?> value = arguments.get(suppressParameter);
-            if (value instanceof ArrayValue) {
-                ArrayValue arrayValue = (ArrayValue) value;
-                List<CompileTimeConstant<?>> values = arrayValue.getValue();
-
-                addStrings(builder, values);
+            for (CompileTimeConstant<?> value : annotationDescriptor.getAllValueArguments().values()) {
+                if (value instanceof ArrayValue) {
+                    addStrings(builder, ((ArrayValue) value).getValue());
+                }
             }
-
         }
         return builder.build();
     }
