@@ -46,15 +46,7 @@ public class JetPackageDirective extends JetModifierListOwnerStub<PsiJetPlaceHol
     // This should be either JetSimpleNameExpression, or JetDotQualifiedExpression
     @Nullable
     public JetExpression getPackageNameExpression() {
-        //TODO:
-        ArrayFactory<JetExpression> arrayFactory = new ArrayFactory<JetExpression>() {
-            @NotNull
-            @Override
-            public JetExpression[] create(int count) {
-                return new JetExpression[count];
-            }
-        };
-        return JetStubbedPsiUtil.getStubOrPsiChild(this, JetImportDirective.IMPORT_DIRECTIVE_EXPRESSIONS, arrayFactory);
+        return JetStubbedPsiUtil.getStubOrPsiChild(this, JetImportDirective.IMPORT_DIRECTIVE_EXPRESSIONS, JetExpression.ARRAY_FACTORY);
     }
 
     @NotNull
