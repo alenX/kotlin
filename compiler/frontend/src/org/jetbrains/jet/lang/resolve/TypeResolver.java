@@ -229,7 +229,7 @@ public class TypeResolver {
             });
         }
         if (result[0] == null) {
-            return type(ErrorUtils.createErrorType("TEMP"));
+            return type(ErrorUtils.createErrorType(typeElement == null ? "No type element" : typeElement.getText()));
         }
         return result[0];
     }
